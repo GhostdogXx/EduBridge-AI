@@ -416,6 +416,27 @@ const en = {
       description: "Reset your choices and set up your learning again.",
       button: "Restart Onboarding",
     },
+    offlineLessons: {
+      title: "Saved Lessons",
+      description:
+        "Lessons you downloaded for offline use. Open them anytime, even without internet.",
+      empty: "No saved lessons yet. Pick a topic and tap Download for Offline.",
+      savedAt: (date: string) => `Saved ${date}`,
+      openLabel: "Open",
+      open: (title: string) => `Open saved lesson: ${title}`,
+      remove: (title: string) => `Remove saved lesson: ${title}`,
+    },
+  },
+  offlineDownload: {
+    toggleTitle: "Download for offline",
+    toggleDescription:
+      "Save this lesson and quiz on your device so you can study without internet.",
+    toggleAria: "Download lesson for offline use",
+    downloadButton: "Download for Offline",
+    downloading: "Downloading lesson…",
+    saved: "Saved for offline — you can study without internet.",
+    startWithDownload: "Download & Start Learning",
+    error: "We couldn't download this lesson. Check your connection and try again.",
   },
   offline: {
     title: "You're offline",
@@ -834,6 +855,29 @@ const fil: Dictionary = {
       description: "I-reset ang mga pinili mo at mag-setup ulit.",
       button: "Simulan ulit ang setup",
     },
+    offlineLessons: {
+      title: "Naka-save na aralin",
+      description:
+        "Mga araling na-download mo para sa offline. Puwede mong buksan kahit walang internet.",
+      empty:
+        "Wala pang naka-save na aralin. Pumili ng paksa at pindutin ang I-download para sa offline.",
+      savedAt: (date: string) => `Na-save noong ${date}`,
+      openLabel: "Buksan",
+      open: (title: string) => `Buksan ang naka-save na aralin: ${title}`,
+      remove: (title: string) => `Tanggalin ang naka-save na aralin: ${title}`,
+    },
+  },
+  offlineDownload: {
+    toggleTitle: "I-download para sa offline",
+    toggleDescription:
+      "I-save ang aralin at quiz sa device mo para makapag-aral kahit walang internet.",
+    toggleAria: "I-download ang aralin para sa offline",
+    downloadButton: "I-download para sa offline",
+    downloading: "Dina-download ang aralin…",
+    saved: "Naka-save na — puwede kang mag-aral kahit walang internet.",
+    startWithDownload: "I-download at magsimula",
+    error:
+      "Hindi ma-download ang aralin. Tingnan ang internet mo at subukan ulit.",
   },
   offline: {
     title: "Offline ka",

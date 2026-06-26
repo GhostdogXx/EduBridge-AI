@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useAppContext } from "@/context/app-context";
+import { getCachedQuiz } from "@/lib/offline-download";
 import type { QuizResponse } from "@/lib/types/api";
 
 type QuizStatus = "idle" | "loading" | "success" | "error";
@@ -22,9 +23,17 @@ export function useQuiz(topicId: string): UseQuizResult {
   const reload = useCallback(() => setReloadToken((token) => token + 1), []);
 
   useEffect(() => {
-    if (!isHydrated || !userProfile) return;
+    if (!isHydrated || !userProfile || !topicId.trim()) return;
 
     const controller = new AbortController();
+    const cached = getCachedQuiz(topicId);
+
+    if (!navigator.onLine && cached) {
+      setData(cached);
+      setStatus("success");
+      return;
+    }
+
     setStatus("loading");
 
     fetch("/api/quiz", {
@@ -41,6 +50,13 @@ export function useQuiz(topicId: string): UseQuizResult {
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
+
+        if (cached) {
+          setData(cached);
+          setStatus("success");
+          return;
+        }
+
         setStatus("error");
       });
 

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useAppContext } from "@/context/app-context";
+import { getCachedLesson } from "@/lib/offline-download";
 import type { LessonResponse } from "@/lib/types/api";
 import type { LessonVariant } from "@/lib/types/learning";
 
@@ -13,6 +14,10 @@ interface UseLessonResult {
   status: LessonStatus;
   errorMessage: string | null;
   reload: () => void;
+}
+
+function canUseOfflineCache(variant: LessonVariant): boolean {
+  return variant === "standard";
 }
 
 export function useLesson(
@@ -31,6 +36,16 @@ export function useLesson(
     if (!isHydrated || !userProfile || !topicId.trim()) return;
 
     const controller = new AbortController();
+    const cached =
+      canUseOfflineCache(variant) ? getCachedLesson(topicId) : null;
+
+    if (!navigator.onLine && cached) {
+      setData(cached);
+      setStatus("success");
+      setErrorMessage(null);
+      return;
+    }
+
     setStatus("loading");
     setErrorMessage(null);
 
@@ -58,6 +73,14 @@ export function useLesson(
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
+
+        if (cached) {
+          setData(cached);
+          setStatus("success");
+          setErrorMessage(null);
+          return;
+        }
+
         setErrorMessage(
           error instanceof Error ? error.message : "Lesson request failed.",
         );

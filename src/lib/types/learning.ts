@@ -80,7 +80,7 @@ export interface EvaluationFeedback {
   tips: string[];
 }
 
-export type ContentSource = "ai" | "fallback";
+export type ContentSource = "ai" | "fallback" | "offline";
 
 export interface ProgressSnapshot {
   lessonsCompleted: number;

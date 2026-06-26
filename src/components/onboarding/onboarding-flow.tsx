@@ -10,6 +10,7 @@ import { OnboardingStepView } from "@/components/onboarding/onboarding-step-view
 import { SubjectCard } from "@/components/onboarding/subject-card";
 import { TopicInput } from "@/components/onboarding/topic-input";
 import { TopicSuggestionList } from "@/components/onboarding/topic-suggestion-list";
+import { OfflineDownloadOption } from "@/components/learning/offline-download-controls";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/context/app-context";
 import { STORAGE_KEYS } from "@/lib/constants";
@@ -19,6 +20,7 @@ import type { OnboardingOption } from "@/lib/onboarding-content";
 import { TOTAL_ONBOARDING_STEPS } from "@/lib/onboarding-content";
 import { SUBJECT_DEFINITIONS } from "@/lib/subjects";
 import { createDiscoveredTopicId } from "@/lib/topic-utils";
+import { downloadTopicForOffline } from "@/lib/offline-download";
 import type {
   Grade,
   SelectedTopic,
@@ -48,6 +50,8 @@ export function OnboardingFlow() {
   const [topicsLoading, setTopicsLoading] = useState(false);
   const [topicsError, setTopicsError] = useState(false);
   const [topicsErrorMessage, setTopicsErrorMessage] = useState("");
+  const [downloadOffline, setDownloadOffline] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
 
   const gradeOptions: OnboardingOption<Grade>[] = ([1, 2, 3, 4, 5, 6] as const).map(
     (grade) => ({
@@ -161,6 +165,27 @@ export function OnboardingFlow() {
       language: activeLanguage,
       selectedTopic: draft.selectedTopic as SelectedTopic,
     };
+
+    if (downloadOffline) {
+      setTopicsLoading(true);
+      setDownloadError("");
+      try {
+        await downloadTopicForOffline(
+          profile,
+          profile.selectedTopic.id,
+          lowDataMode,
+        );
+      } catch (error: unknown) {
+        setDownloadError(
+          error instanceof Error
+            ? error.message
+            : t.offlineDownload.error,
+        );
+        setTopicsLoading(false);
+        return;
+      }
+      setTopicsLoading(false);
+    }
 
     setUserProfile(profile);
     window.localStorage.setItem(
@@ -299,6 +324,20 @@ export function OnboardingFlow() {
                 }))
               }
             />
+
+            {draft.selectedTopic ? (
+              <OfflineDownloadOption
+                checked={downloadOffline}
+                onChange={setDownloadOffline}
+                disabled={topicsLoading}
+              />
+            ) : null}
+
+            {downloadError ? (
+              <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+                {downloadError}
+              </p>
+            ) : null}
           </div>
         );
       default:
@@ -310,7 +349,9 @@ export function OnboardingFlow() {
     currentStep === 2
       ? t.onboarding.topicDiscovery.continue
       : isFinalStep
-        ? t.onboarding.startLearning
+        ? downloadOffline
+          ? t.offlineDownload.startWithDownload
+          : t.onboarding.startLearning
         : t.onboarding.continue;
 
   return (
@@ -360,7 +401,9 @@ export function OnboardingFlow() {
             {topicsLoading ? (
               <>
                 <Loader2 className="size-5 animate-spin" aria-hidden="true" />
-                {t.onboarding.topicDiscovery.loading}
+                {isFinalStep && downloadOffline
+                  ? t.offlineDownload.downloading
+                  : t.onboarding.topicDiscovery.loading}
               </>
             ) : (
               <>

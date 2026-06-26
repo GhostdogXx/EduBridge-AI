@@ -49,6 +49,7 @@ export const STORAGE_KEYS = {
   progress: "edubridge-progress",
   learningPath: "edubridge-learning-path",
   preferredLanguage: "edubridge-preferred-language",
+  offlinePacks: "edubridge-offline-packs",
 } as const;
 
 export const COLORS = {

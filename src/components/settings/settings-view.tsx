@@ -5,6 +5,7 @@ import { Globe, RotateCcw } from "lucide-react";
 
 import { LanguageToggle } from "@/components/layout/language-toggle";
 import { LowDataToggle } from "@/components/layout/low-data-toggle";
+import { OfflineLessonsCard } from "@/components/settings/offline-lessons-card";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -74,6 +75,8 @@ export function SettingsView() {
           </div>
         </CardContent>
       </Card>
+
+      <OfflineLessonsCard />
 
       <Card className="rounded-3xl border-border/60 shadow-sm">
         <CardHeader>

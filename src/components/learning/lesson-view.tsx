@@ -17,11 +17,13 @@ import { LessonHeader } from "@/components/learning/lesson-header";
 import { LessonSectionCard } from "@/components/learning/lesson-section-card";
 import { LessonSkeleton } from "@/components/learning/lesson-skeleton";
 import { OfflineBanner } from "@/components/learning/offline-banner";
+import { DownloadLessonButton } from "@/components/learning/offline-download-controls";
 import { QuickCheck } from "@/components/learning/quick-check";
 import { useAppContext } from "@/context/app-context";
 import { resolveLessonTopic } from "@/lib/topic-utils";
 import { useLearningPath } from "@/hooks/use-learning-path";
 import { useLesson } from "@/hooks/use-lesson";
+import { useOfflineDownload } from "@/hooks/use-offline-download";
 import { useT } from "@/lib/i18n";
 import type { LessonVariant } from "@/lib/types/learning";
 
@@ -45,6 +47,12 @@ export function LessonView({
     topicId || userProfile?.selectedTopic?.id || recommendedTopicId();
 
   const { data, status, errorMessage, reload } = useLesson(effectiveTopicId, activeVariant);
+  const {
+    isDownloaded,
+    status: downloadStatus,
+    errorMessage: downloadErrorMessage,
+    download,
+  } = useOfflineDownload(effectiveTopicId);
   const t = useT();
   const quickCheckRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +96,11 @@ export function LessonView({
     router.push(`/quiz?lesson=${effectiveTopicId}`);
   };
 
+  const handleDownload = () => {
+    if (!userProfile) return;
+    void download(userProfile, effectiveTopicId, lowDataMode);
+  };
+
   if (
     !isHydrated ||
     !userProfile ||
@@ -127,7 +140,7 @@ export function LessonView({
 
       {alignment ? <CurriculumCard alignment={alignment} /> : null}
 
-      {source === "fallback" ? <OfflineBanner /> : null}
+      {source === "fallback" || source === "offline" ? <OfflineBanner /> : null}
 
       <AdaptiveBanner variant={activeVariant} />
 
@@ -180,6 +193,20 @@ export function LessonView({
             : handleTeachDifferently
         }
       />
+
+      {downloadErrorMessage ? (
+        <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+          {downloadErrorMessage}
+        </p>
+      ) : null}
+
+      {activeVariant === "standard" ? (
+        <DownloadLessonButton
+          isDownloaded={isDownloaded}
+          isDownloading={downloadStatus === "downloading"}
+          onDownload={handleDownload}
+        />
+      ) : null}
     </div>
   );
 }
