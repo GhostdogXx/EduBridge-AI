@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="EduBridge AI">
+  <rect width="512" height="512" rx="112" fill="#2563EB"/>
+  <path fill="#FFFFFF" d="M128 160h256v48H128zm0 96h176v48H128zm0 96h224v48H128z"/>
+  <circle cx="368" cy="352" r="56" fill="#22C55E"/>
+  <path fill="#FFFFFF" d="M352 352l12 12 24-24" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
