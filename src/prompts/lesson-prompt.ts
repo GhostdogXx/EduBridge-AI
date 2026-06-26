@@ -2,7 +2,7 @@ import type { ResolvedLessonTopic } from "@/lib/topic-utils";
 import type { LessonVariant, UserProfile } from "@/lib/types/learning";
 import {
   JSON_ONLY_RULES,
-  TAGLISH_RULES,
+  ENGLISH_LESSON_RULES,
   filipinoContentBlock,
   gradeGuidance,
   isFilipinoLanguage,
@@ -33,7 +33,7 @@ const LESSON_SCHEMA_FILIPINO = `{
 const LESSON_SCHEMA_DEFAULT = `{
   "title": string (a short, friendly lesson title),
   "simpleExplanation": string (clear, grade-appropriate explanation in English),
-  "taglishExplanation": string (natural Taglish explanation, not a literal translation),
+  "taglishExplanation": string (second friendly explanation in clear English — not a copy of the first),
   "filipinoExample": string (one relatable real-life Filipino example),
   "whyItMatters": string (why this concept is useful in daily life),
   "estimatedReadingMinutes": number (integer, 1-5),
@@ -75,7 +75,7 @@ export function buildLessonPrompt({
           "- Lahat ng teksto para sa mag-aaral ay nasa simpleng Filipino lang.",
           "- Maikli ang bawat pangungusap. Ipaliwanag ang mahirap na salita nang simple.",
         ]
-      : [`- ${TAGLISH_RULES}`]),
+      : [`- ${ENGLISH_LESSON_RULES}`]),
     `- ${lowDataNote(lowDataMode)}`,
     ...(lowDataMode
       ? ["- estimatedReadingMinutes must be 1.", "- Use plain, direct language — no decorative phrasing."]

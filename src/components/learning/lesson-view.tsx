@@ -115,7 +115,7 @@ export function LessonView({
   const secondSectionLabel =
     userProfile.language === "filipino"
       ? t.learn.sections.filipinoSecond
-      : t.learn.sections.taglish;
+      : t.learn.sections.secondExplanation;
 
   return (
     <div className="flex flex-col gap-5">

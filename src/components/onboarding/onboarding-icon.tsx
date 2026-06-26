@@ -2,7 +2,6 @@ import {
   BookOpenCheck,
   GraduationCap,
   Languages,
-  MessageSquareText,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -19,7 +18,6 @@ const ICON_MAP: Record<OnboardingIconName, LucideIcon> = {
   science: Sparkles,
   english: BookOpenCheck,
   filipino: Languages,
-  taglish: MessageSquareText,
 };
 
 interface OnboardingIconProps {

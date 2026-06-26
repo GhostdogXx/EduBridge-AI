@@ -40,7 +40,7 @@ export function subjectGuidance(subject: Subject): string {
 export function languageGuidance(language: LanguagePreference): string {
   switch (language) {
     case "english":
-      return "The student prefers English. Keep the simpleExplanation in clear English. Still provide the taglishExplanation field in natural Taglish as a friendly second take.";
+      return "The student prefers English. Keep the simpleExplanation in clear English. Write taglishExplanation as a second, friendly explanation also in clear English (not a literal copy of the first).";
     case "filipino":
       return [
         "The student prefers Filipino. ALL generated text for this student must be in simple everyday Filipino at an elementary reading level.",
@@ -50,8 +50,6 @@ export function languageGuidance(language: LanguagePreference): string {
         "For topic suggestions: write category, titles, and descriptions in simple Filipino only.",
         "For feedback: write headline, feedback, and tips in simple Filipino only.",
       ].join(" ");
-    case "taglish":
-      return "The student prefers Taglish. Make the taglishExplanation feel natural and conversational, mixing English and Filipino the way Filipino students actually speak.";
   }
 }
 
@@ -60,10 +58,10 @@ export function filipinoContentBlock(language: LanguagePreference): string | nul
   return ["FILIPINO LANGUAGE (REQUIRED):", SIMPLE_FILIPINO_RULES].join("\n");
 }
 
-export const TAGLISH_RULES = [
-  "Write Taglish naturally — do NOT translate word-for-word.",
+export const ENGLISH_LESSON_RULES = [
   "Use familiar Filipino contexts: jeepney, sari-sari store, palayan (rice field), school, family, or plants in the backyard.",
   "Be warm, encouraging, and never condescending.",
+  "Use clear, grade-appropriate English.",
 ].join(" ");
 
 export const JSON_ONLY_RULES = [
@@ -99,7 +97,7 @@ export function variantGuidance(
   prerequisiteTopic?: string,
   language?: LanguagePreference,
 ): string | null {
-  const filipinoNote = isFilipinoLanguage(language ?? "english")
+  const filipinoNote = isFilipinoLanguage(language ?? "filipino")
     ? " Use simple everyday Filipino only."
     : "";
 

@@ -25,9 +25,16 @@ export const SUBJECTS: { value: Subject; label: string }[] = [
 
 export const LANGUAGES: { value: LanguagePreference; label: string }[] = [
   { value: "filipino", label: "Filipino" },
-  { value: "taglish", label: "Taglish" },
   { value: "english", label: "English" },
 ];
+
+/** Maps legacy stored values (e.g. taglish) to a supported language. */
+export function normalizeLanguagePreference(
+  value: unknown,
+): LanguagePreference {
+  if (value === "english") return "english";
+  return "filipino";
+}
 
 export const DEFAULT_LANGUAGE: LanguagePreference = "filipino";
 

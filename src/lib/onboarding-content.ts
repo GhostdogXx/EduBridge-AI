@@ -7,8 +7,7 @@ export type OnboardingIcon =
   | "grade-6"
   | "science"
   | "english"
-  | "filipino"
-  | "taglish";
+  | "filipino";
 
 export interface OnboardingOption<TValue> {
   value: TValue;

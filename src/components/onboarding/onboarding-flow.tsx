@@ -38,7 +38,7 @@ interface DraftProfile {
 export function OnboardingFlow() {
   const router = useRouter();
   const uiLanguage = useUiLanguage();
-  const { setUserProfile, lowDataMode, preferredLanguage } = useAppContext();
+  const { setUserProfile, lowDataMode, activeLanguage } = useAppContext();
   const t = useT();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -98,7 +98,7 @@ export function OnboardingFlow() {
         body: JSON.stringify({
           grade: draft.grade,
           subject: draft.subject,
-          language: preferredLanguage,
+          language: activeLanguage,
           keyword: draft.keyword.trim(),
           lowDataMode,
         }),
@@ -158,7 +158,7 @@ export function OnboardingFlow() {
     const profile: UserProfile = {
       grade: draft.grade as Grade,
       subject: draft.subject as Subject,
-      language: preferredLanguage,
+      language: activeLanguage,
       selectedTopic: draft.selectedTopic as SelectedTopic,
     };
 

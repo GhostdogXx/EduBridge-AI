@@ -1,7 +1,7 @@
 "use client";
 
 import { useAppContext } from "@/context/app-context";
-import { DEFAULT_LANGUAGE, LANGUAGES, STORAGE_KEYS } from "@/lib/constants";
+import { DEFAULT_LANGUAGE, normalizeLanguagePreference, STORAGE_KEYS } from "@/lib/constants";
 import type { LanguagePreference } from "@/lib/types/learning";
 import {
   messages,
@@ -15,9 +15,9 @@ export type { Dictionary, UiLanguage };
 
 /** Active UI language. Defaults to Filipino until the client has hydrated. */
 export function useUiLanguage(): UiLanguage {
-  const { userProfile, preferredLanguage, isHydrated } = useAppContext();
+  const { activeLanguage, isHydrated } = useAppContext();
   if (!isHydrated) return resolveUiLanguage(DEFAULT_LANGUAGE);
-  return resolveUiLanguage(userProfile?.language ?? preferredLanguage);
+  return resolveUiLanguage(activeLanguage);
 }
 
 export function useT(): Dictionary {
@@ -25,7 +25,7 @@ export function useT(): Dictionary {
 }
 
 function isLanguagePreference(value: unknown): value is LanguagePreference {
-  return LANGUAGES.some((language) => language.value === value);
+  return value === "english" || value === "filipino" || value === "taglish";
 }
 
 /**
@@ -42,7 +42,7 @@ export function getStoredDictionary(): Dictionary {
     if (rawProfile) {
       const parsed = JSON.parse(rawProfile) as { language?: unknown };
       if (isLanguagePreference(parsed.language)) {
-        return messages[resolveUiLanguage(parsed.language)];
+        return messages[resolveUiLanguage(normalizeLanguagePreference(parsed.language))];
       }
     }
 
@@ -50,7 +50,7 @@ export function getStoredDictionary(): Dictionary {
       STORAGE_KEYS.preferredLanguage,
     );
     if (isLanguagePreference(storedPref)) {
-      return messages[resolveUiLanguage(storedPref)];
+      return messages[resolveUiLanguage(normalizeLanguagePreference(storedPref))];
     }
   } catch {
     // fall through to default

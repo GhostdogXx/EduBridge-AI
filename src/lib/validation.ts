@@ -34,10 +34,16 @@ export const selectedTopicSchema = z.object({
   difficulty: topicDifficultySchema,
 });
 
+const languagePreferenceSchema = z.union([
+  z.literal("english"),
+  z.literal("filipino"),
+  z.literal("taglish").transform(() => "filipino" as const),
+]);
+
 export const userProfileSchema = z.object({
   grade: gradeSchema,
   subject: subjectSchema,
-  language: z.enum(["english", "filipino", "taglish"]),
+  language: languagePreferenceSchema,
   selectedTopic: selectedTopicSchema,
 });
 
@@ -149,7 +155,7 @@ export const evaluationRequestSchema = z.object({
 export const topicsRequestSchema = z.object({
   grade: gradeSchema,
   subject: subjectSchema,
-  language: z.enum(["english", "filipino", "taglish"]),
+  language: languagePreferenceSchema,
   keyword: z.string().min(1).max(80),
   lowDataMode: z.boolean().optional(),
 });

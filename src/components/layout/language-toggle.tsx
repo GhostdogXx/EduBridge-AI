@@ -8,27 +8,24 @@ import { LANGUAGES } from "@/lib/constants";
 import { useT } from "@/lib/i18n";
 import type { LanguagePreference } from "@/lib/types/learning";
 
-const ORDER: LanguagePreference[] = ["filipino", "taglish", "english"];
+const ORDER: LanguagePreference[] = ["filipino", "english"];
 
 const SHORT_LABEL: Record<LanguagePreference, string> = {
   english: "EN",
   filipino: "FIL",
-  taglish: "TAG",
 };
 
 export function LanguageToggle() {
-  const { userProfile, setUserProfile } = useAppContext();
+  const { activeLanguage, setActiveLanguage } = useAppContext();
   const t = useT();
 
-  if (!userProfile) return null;
-
-  const current = userProfile.language;
   const currentLabel =
-    LANGUAGES.find((language) => language.value === current)?.label ?? "Filipino";
+    LANGUAGES.find((language) => language.value === activeLanguage)?.label ??
+    "Filipino";
 
   const handleCycle = () => {
-    const nextIndex = (ORDER.indexOf(current) + 1) % ORDER.length;
-    setUserProfile({ ...userProfile, language: ORDER[nextIndex] });
+    const nextIndex = (ORDER.indexOf(activeLanguage) + 1) % ORDER.length;
+    setActiveLanguage(ORDER[nextIndex]);
   };
 
   return (
@@ -40,7 +37,7 @@ export function LanguageToggle() {
       aria-label={t.settings.language.toggleAria(currentLabel)}
     >
       <Languages className="size-4" aria-hidden="true" />
-      <span className="text-xs font-semibold">{SHORT_LABEL[current]}</span>
+      <span className="text-xs font-semibold">{SHORT_LABEL[activeLanguage]}</span>
     </Button>
   );
 }

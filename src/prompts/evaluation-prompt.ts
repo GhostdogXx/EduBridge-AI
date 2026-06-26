@@ -66,7 +66,7 @@ export function buildEvaluationPrompt({
           "- Maikli at malinaw ang bawat pangungusap. Parang guro na nagpapalakas ng loob.",
         ]
       : [
-          "- Use a warm Taglish-friendly tone that a Filipino student would enjoy.",
+          "- Use a warm, encouraging tone that a Filipino student would enjoy.",
         ]),
     "- Do NOT decide the next lesson — only give feedback and tips.",
     `- ${lowDataNote(lowDataMode)}`,

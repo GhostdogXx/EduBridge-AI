@@ -3,8 +3,7 @@ import type { LanguagePreference } from "@/lib/types/learning";
 export type UiLanguage = "en" | "fil";
 
 /**
- * UI chrome is rendered in English or Filipino. Taglish learners get Filipino
- * chrome (their lesson *content* is still generated in Taglish by the model).
+ * UI chrome is rendered in English or Filipino based on the learner's language choice.
  *
  * Filipino strings use simple, everyday language for elementary students —
  * short sentences, common words, friendly tone. Avoid formal or archaic Filipino.
@@ -35,7 +34,7 @@ const en = {
   },
   landing: {
     hero: {
-      badge: "For Grades 1–6 · All subjects · Taglish-friendly",
+      badge: "For Grades 1–6 · All subjects · English or Filipino",
       title: "Learn Smarter, One Lesson at a Time.",
       subtitle:
         "Your AI-powered study companion designed for Filipino learners with bilingual lessons, adaptive quizzes, and personalized guidance.",
@@ -51,7 +50,7 @@ const en = {
       points: {
         language: {
           title: "Lessons in the wrong language",
-          body: "Most learning apps assume fluent English. Many Filipino students learn best in Filipino or Taglish.",
+          body: "Most learning apps assume fluent English. Many Filipino students learn best in Filipino.",
         },
         connection: {
           title: "Weak or no internet",
@@ -71,7 +70,7 @@ const en = {
         "guided-lessons": {
           title: "Guided Lessons",
           description:
-            "Clear explanations in English, Filipino, or Taglish — with real-life examples from jeepney rides to sari-sari stores.",
+            "Clear explanations in English or Filipino — with real-life examples from jeepney rides to sari-sari stores.",
         },
         "adaptive-practice": {
           title: "Adaptive Practice",
@@ -120,7 +119,6 @@ const en = {
       heading: "Choose your language",
       options: {
         filipino: { label: "Filipino", description: "Lessons in Filipino" },
-        taglish: { label: "Taglish", description: "A mix of English and Filipino" },
         english: { label: "English", description: "Lessons in English" },
       },
     },
@@ -168,7 +166,6 @@ const en = {
       subtitle: "You can change this anytime during a lesson.",
       options: {
         filipino: { label: "Filipino", description: "Lessons in Filipino" },
-        taglish: { label: "Taglish", description: "A mix of English and Filipino" },
         english: { label: "English", description: "Lessons fully in English" },
       },
     },
@@ -267,7 +264,7 @@ const en = {
     },
     sections: {
       simple: "Simple Explanation",
-      taglish: "In Taglish",
+      secondExplanation: "Another Explanation",
       filipinoSecond: "Another Explanation",
       example: "Real-life Example",
       whyItMatters: "Why It Matters",
@@ -459,7 +456,7 @@ const fil: Dictionary = {
       badge: "Para sa Baitang 1–6 · Lahat ng asignatura",
       title: "Matuto nang mas madali, isang aralin bawat isa.",
       subtitle:
-        "Kasama mo sa pag-aaral — may aralin, quiz, at tulong na akma sa iyo. Puwede sa Filipino, Taglish, o English.",
+        "Kasama mo sa pag-aaral — may aralin, quiz, at tulong na akma sa iyo. Puwede sa Filipino o English.",
       primaryCta: "Mag-aral na",
       secondaryCta: "Paano gumagana",
       mockQuickCheck: "Mabilis na tanong",
@@ -472,7 +469,7 @@ const fil: Dictionary = {
       points: {
         language: {
           title: "Mali ang wika ng aralin",
-          body: "Karamihan ng app ay English lang. Maraming bata ang mas natututo sa Filipino o Taglish.",
+          body: "Karamihan ng app ay English lang. Maraming bata ang mas natututo sa Filipino.",
         },
         connection: {
           title: "Mahina o walang internet",
@@ -492,7 +489,7 @@ const fil: Dictionary = {
         "guided-lessons": {
           title: "May gabay na aralin",
           description:
-            "Malinaw na paliwanag sa English, Filipino, o Taglish — may halimbawa mula sa jeepney, sari-sari store, at paaralan.",
+            "Malinaw na paliwanag sa English o Filipino — may halimbawa mula sa jeepney, sari-sari store, at paaralan.",
         },
         "adaptive-practice": {
           title: "Quiz na akma sa iyo",
@@ -540,7 +537,6 @@ const fil: Dictionary = {
       heading: "Piliin ang wika mo",
       options: {
         filipino: { label: "Filipino", description: "Aralin sa Filipino" },
-        taglish: { label: "Taglish", description: "Halong English at Filipino" },
         english: { label: "English", description: "Aralin sa English" },
       },
     },
@@ -588,7 +584,6 @@ const fil: Dictionary = {
       subtitle: "Puwede mong palitan kahit kailan.",
       options: {
         filipino: { label: "Filipino", description: "Aralin sa Filipino" },
-        taglish: { label: "Taglish", description: "Halong English at Filipino" },
         english: { label: "English", description: "Aralin sa English" },
       },
     },
@@ -687,7 +682,7 @@ const fil: Dictionary = {
     },
     sections: {
       simple: "Paliwanag",
-      taglish: "Sa Taglish",
+      secondExplanation: "Isa pang paliwanag",
       filipinoSecond: "Isa pang paliwanag",
       example: "Halimbawa sa buhay",
       whyItMatters: "Bakit mahalaga",

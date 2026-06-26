@@ -15,7 +15,7 @@ export const LANDING_COPY = {
         id: "guided-lessons",
         title: "Guided Lessons",
         description:
-          "Clear explanations in English, Filipino, or Taglish — with real-life examples from jeepney rides to sari-sari stores.",
+          "Clear explanations in English or Filipino — with real-life examples from jeepney rides to sari-sari stores.",
         icon: "book" as const,
       },
       {

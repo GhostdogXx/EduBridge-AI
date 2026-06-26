@@ -18,7 +18,7 @@ describe("discovered topic ids", () => {
     const profile: UserProfile = {
       grade: 5,
       subject: "science",
-      language: "taglish",
+      language: "filipino",
       selectedTopic: {
         id: "discovered-plant-cells",
         title: "Plant Cells",

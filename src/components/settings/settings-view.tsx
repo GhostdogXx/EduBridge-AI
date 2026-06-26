@@ -19,12 +19,12 @@ import { useT } from "@/lib/i18n";
 
 export function SettingsView() {
   const router = useRouter();
-  const { userProfile, clearUserProfile } = useAppContext();
+  const { activeLanguage, clearUserProfile } = useAppContext();
   const t = useT();
 
   const currentLanguage =
-    LANGUAGES.find((language) => language.value === userProfile?.language)
-      ?.label ?? "Filipino";
+    LANGUAGES.find((language) => language.value === activeLanguage)?.label ??
+    "Filipino";
 
   const handleRestart = () => {
     clearUserProfile();
@@ -50,32 +50,30 @@ export function SettingsView() {
         </CardContent>
       </Card>
 
-      {userProfile ? (
-        <Card className="rounded-3xl border-border/60 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg">{t.settings.language.title}</CardTitle>
-            <CardDescription>{t.settings.language.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4">
-              <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
-                  <Globe className="size-5 text-primary" aria-hidden="true" />
-                </span>
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {t.settings.language.current(currentLanguage)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t.settings.language.tapToSwitch}
-                  </p>
-                </div>
+      <Card className="rounded-3xl border-border/60 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg">{t.settings.language.title}</CardTitle>
+          <CardDescription>{t.settings.language.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+                <Globe className="size-5 text-primary" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="font-semibold text-foreground">
+                  {t.settings.language.current(currentLanguage)}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t.settings.language.tapToSwitch}
+                </p>
               </div>
-              <LanguageToggle />
             </div>
-          </CardContent>
-        </Card>
-      ) : null}
+            <LanguageToggle />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="rounded-3xl border-border/60 shadow-sm">
         <CardHeader>

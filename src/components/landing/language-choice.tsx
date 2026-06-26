@@ -3,14 +3,12 @@
 import { Check, Languages } from "lucide-react";
 
 import { useAppContext } from "@/context/app-context";
+import { LANGUAGES } from "@/lib/constants";
 import { useT } from "@/lib/i18n";
-import type { LanguagePreference } from "@/lib/types/learning";
 import { cn } from "@/lib/utils";
 
-const LANGUAGE_VALUES: LanguagePreference[] = ["filipino", "taglish", "english"];
-
 export function LanguageChoice() {
-  const { preferredLanguage, setPreferredLanguage } = useAppContext();
+  const { activeLanguage, setActiveLanguage } = useAppContext();
   const t = useT();
 
   return (
@@ -23,11 +21,11 @@ export function LanguageChoice() {
       <div
         role="radiogroup"
         aria-label={t.a11y.preferredLanguage}
-        className="grid grid-cols-1 gap-2.5 sm:grid-cols-3"
+        className="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
       >
-        {LANGUAGE_VALUES.map((value) => {
+        {LANGUAGES.map(({ value, label }) => {
           const option = t.landing.languageChoice.options[value];
-          const isSelected = preferredLanguage === value;
+          const isSelected = activeLanguage === value;
 
           return (
             <button
@@ -35,7 +33,7 @@ export function LanguageChoice() {
               type="button"
               role="radio"
               aria-checked={isSelected}
-              onClick={() => setPreferredLanguage(value)}
+              onClick={() => setActiveLanguage(value)}
               className={cn(
                 "flex min-h-16 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 px-4 py-3 text-center transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                 isSelected

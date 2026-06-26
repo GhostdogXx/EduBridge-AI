@@ -11,7 +11,7 @@ export type Subject =
   | "ict"
   | "mother-tongue";
 
-export type LanguagePreference = "english" | "filipino" | "taglish";
+export type LanguagePreference = "english" | "filipino";
 
 export type TopicDifficulty = "easy" | "moderate" | "challenging";
 
