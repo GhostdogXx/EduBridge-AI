@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
-import { DEFAULT_LANGUAGE, LANGUAGES, normalizeLanguagePreference, STORAGE_KEYS } from "@/lib/constants";
+import { DEFAULT_LANGUAGE, normalizeLanguagePreference, STORAGE_KEYS } from "@/lib/constants";
 import type { LanguagePreference, UserProfile } from "@/lib/types/learning";
 import { safeParseUserProfile } from "@/lib/validation";
 

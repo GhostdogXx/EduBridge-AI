@@ -23,7 +23,7 @@ export function LanguageChoice() {
         aria-label={t.a11y.preferredLanguage}
         className="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
       >
-        {LANGUAGES.map(({ value, label }) => {
+        {LANGUAGES.map(({ value }) => {
           const option = t.landing.languageChoice.options[value];
           const isSelected = activeLanguage === value;
 

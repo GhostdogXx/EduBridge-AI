@@ -86,7 +86,6 @@ export function TopicProgressList({ path }: TopicProgressListProps) {
                 <li
                   key={topic.id}
                   className="flex items-center gap-3 rounded-2xl p-3 opacity-60"
-                  aria-disabled="true"
                 >
                   {content}
                 </li>
