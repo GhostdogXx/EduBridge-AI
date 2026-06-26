@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { generateStructured } from "@/lib/gemini/client";
-import { hasGeminiKey } from "@/lib/gemini/config";
+import { generateStructured } from "@/lib/ai/client";
+import { hasAiKey } from "@/lib/ai/config";
 import { getFallbackEvaluation } from "@/lib/mock/evaluation";
 import { resolveLessonTopic } from "@/lib/topic-utils";
 import type { EvaluationResponse } from "@/lib/types/api";
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     source: "fallback",
   });
 
-  if (!hasGeminiKey()) {
+  if (!hasAiKey()) {
     return NextResponse.json(fallback());
   }
 

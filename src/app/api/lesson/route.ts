@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { generateStructured, getGeminiErrorMessage } from "@/lib/gemini/client";
-import { hasGeminiKey } from "@/lib/gemini/config";
+import { generateStructured, getAiErrorMessage } from "@/lib/ai/client";
+import { hasAiKey } from "@/lib/ai/config";
 import { resolveLessonTopic } from "@/lib/topic-utils";
 import type { LessonResponse } from "@/lib/types/api";
 import { lessonContentSchema, lessonRequestSchema } from "@/lib/validation";
@@ -31,9 +31,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown topic." }, { status: 404 });
   }
 
-  if (!hasGeminiKey()) {
+  if (!hasAiKey()) {
     return NextResponse.json(
-      { error: "Lesson generation is unavailable. GEMINI_API_KEY is not configured." },
+      { error: "Lesson generation is unavailable. OPENAI_API_KEY is not configured." },
       { status: 503 },
     );
   }
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Lesson generation failed:", error);
     return NextResponse.json(
-      { error: getGeminiErrorMessage(error) },
+      { error: getAiErrorMessage(error) },
       { status: 503 },
     );
   }

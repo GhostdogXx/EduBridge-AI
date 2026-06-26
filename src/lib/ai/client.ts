@@ -1,12 +1,12 @@
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import type { z } from "zod";
 
-import { getGeminiApiKey, getGeminiModels } from "@/lib/gemini/config";
+import { getOpenAiApiKey, getOpenAiModels } from "@/lib/ai/config";
 
-export class GeminiError extends Error {
+export class AiError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "GeminiError";
+    this.name = "AiError";
   }
 }
 
@@ -15,44 +15,34 @@ function errorMessage(error: unknown): string {
   return String(error);
 }
 
-function isQuotaExceededError(error: unknown): boolean {
+function isRateLimitError(error: unknown): boolean {
   const message = errorMessage(error);
   return (
     message.includes("429") ||
-    message.includes("quota") ||
-    message.includes("Quota exceeded") ||
-    message.includes("exceeded your current quota")
+    message.includes("rate_limit") ||
+    message.includes("Rate limit")
   );
 }
 
-function isRetryableGeminiError(error: unknown): boolean {
+function isRetryableAiError(error: unknown): boolean {
   const message = errorMessage(error);
   return (
-    isQuotaExceededError(error) ||
+    isRateLimitError(error) ||
     message.includes("503") ||
-    message.includes("high demand") ||
+    message.includes("500") ||
     message.includes("overloaded") ||
-    message.includes("UNAVAILABLE")
+    message.includes("timeout")
   );
 }
 
-/** Keeps the API's reason text; strips only redundant SDK wrapper noise when possible. */
-function sanitizeApiErrorMessage(message: string): string {
-  const bracketTail = message.match(/\]\s+([\s\S]+)$/);
-  if (bracketTail?.[1]) {
-    return bracketTail[1].trim();
-  }
-  return message.trim();
-}
-
-export function getGeminiErrorMessage(error: unknown): string {
+export function getAiErrorMessage(error: unknown): string {
   const message = errorMessage(error);
 
-  if (message.includes("GEMINI_API_KEY is not configured")) {
-    return "GEMINI_API_KEY is not configured. Add it to .env.local and restart the dev server.";
+  if (message.includes("OPENAI_API_KEY is not configured")) {
+    return "OPENAI_API_KEY is not configured. Add it to .env.local and restart the dev server.";
   }
 
-  return sanitizeApiErrorMessage(message);
+  return message.trim();
 }
 
 /** Strips markdown code fences and stray text so JSON.parse can succeed. */
@@ -83,30 +73,33 @@ async function sleep(ms: number): Promise<void> {
 }
 
 async function generateJsonText(
-  ai: GoogleGenAI,
+  client: OpenAI,
   modelName: string,
   promptText: string,
   temperature: number,
 ): Promise<string> {
-  const response = await ai.models.generateContent({
+  const response = await client.chat.completions.create({
     model: modelName,
-    contents: promptText,
-    config: {
-      responseMimeType: "application/json",
-      temperature,
-    },
+    messages: [
+      {
+        role: "user",
+        content: promptText,
+      },
+    ],
+    response_format: { type: "json_object" },
+    temperature,
   });
 
-  const text = response.text;
+  const text = response.choices[0]?.message?.content;
   if (!text) {
-    throw new GeminiError("Gemini returned an empty response.");
+    throw new AiError("OpenAI returned an empty response.");
   }
 
   return text;
 }
 
 /**
- * Calls Gemini expecting JSON, parses and validates it against the provided Zod
+ * Calls OpenAI expecting JSON, parses and validates it against the provided Zod
  * schema. Retries with stricter instructions and fallback models when needed.
  */
 export async function generateStructured<TSchema extends z.ZodTypeAny>({
@@ -114,23 +107,23 @@ export async function generateStructured<TSchema extends z.ZodTypeAny>({
   schema,
   temperature = 0.7,
 }: GenerateStructuredArgs<TSchema>): Promise<z.infer<TSchema>> {
-  const apiKey = getGeminiApiKey();
+  const apiKey = getOpenAiApiKey();
   if (!apiKey) {
-    throw new GeminiError("GEMINI_API_KEY is not configured.");
+    throw new AiError("OPENAI_API_KEY is not configured.");
   }
 
-  const ai = new GoogleGenAI({ apiKey });
-  const models = getGeminiModels();
+  const client = new OpenAI({ apiKey });
+  const models = getOpenAiModels();
   let lastError: unknown;
 
   const attempt = async (promptText: string, modelName: string): Promise<z.infer<TSchema>> => {
-    const text = await generateJsonText(ai, modelName, promptText, temperature);
+    const text = await generateJsonText(client, modelName, promptText, temperature);
     const parsed = JSON.parse(extractJson(text)) as unknown;
     return schema.parse(parsed);
   };
 
   for (const modelName of models) {
-    let quotaExceeded = false;
+    let rateLimited = false;
 
     for (let retry = 0; retry < 3; retry += 1) {
       try {
@@ -139,12 +132,12 @@ export async function generateStructured<TSchema extends z.ZodTypeAny>({
       } catch (error) {
         lastError = error;
 
-        if (isQuotaExceededError(error)) {
-          quotaExceeded = true;
+        if (isRateLimitError(error)) {
+          rateLimited = true;
           break;
         }
 
-        if (isRetryableGeminiError(error) && retry < 2) {
+        if (isRetryableAiError(error) && retry < 2) {
           continue;
         }
 
@@ -153,17 +146,17 @@ export async function generateStructured<TSchema extends z.ZodTypeAny>({
           return await attempt(stricterPrompt, modelName);
         } catch (retryError) {
           lastError = retryError;
-          if (isQuotaExceededError(retryError)) {
-            quotaExceeded = true;
+          if (isRateLimitError(retryError)) {
+            rateLimited = true;
             break;
           }
-          if (isRetryableGeminiError(retryError)) break;
+          if (isRetryableAiError(retryError)) break;
         }
       }
     }
 
-    if (quotaExceeded) continue;
+    if (rateLimited) continue;
   }
 
-  throw new GeminiError(errorMessage(lastError));
+  throw new AiError(errorMessage(lastError));
 }

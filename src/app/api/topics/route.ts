@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { generateStructured, getGeminiErrorMessage } from "@/lib/gemini/client";
-import { hasGeminiKey } from "@/lib/gemini/config";
+import { generateStructured, getAiErrorMessage } from "@/lib/ai/client";
+import { hasAiKey } from "@/lib/ai/config";
 import type { TopicsResponse } from "@/lib/types/api";
 import { topicDiscoverySchema, topicsRequestSchema } from "@/lib/validation";
 import { buildTopicDiscoveryPrompt } from "@/prompts/topic-discovery-prompt";
@@ -28,9 +28,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Keyword is required." }, { status: 400 });
   }
 
-  if (!hasGeminiKey()) {
+  if (!hasAiKey()) {
     return NextResponse.json(
-      { error: "Topic discovery is unavailable. GEMINI_API_KEY is not configured." },
+      { error: "Topic discovery is unavailable. OPENAI_API_KEY is not configured." },
       { status: 503 },
     );
   }
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Topic discovery failed:", error);
     return NextResponse.json(
-      { error: getGeminiErrorMessage(error) },
+      { error: getAiErrorMessage(error) },
       { status: 503 },
     );
   }

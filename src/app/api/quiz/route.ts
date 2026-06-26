@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { generateStructured } from "@/lib/gemini/client";
-import { hasGeminiKey } from "@/lib/gemini/config";
+import { generateStructured, getAiErrorMessage } from "@/lib/ai/client";
+import { hasAiKey } from "@/lib/ai/config";
 import { resolveLessonTopic } from "@/lib/topic-utils";
 import type { QuizResponse } from "@/lib/types/api";
 import {
@@ -35,9 +35,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown topic." }, { status: 404 });
   }
 
-  if (!hasGeminiKey()) {
+  if (!hasAiKey()) {
     return NextResponse.json(
-      { error: "Quiz generation is unavailable. GEMINI_API_KEY is not configured." },
+      { error: "Quiz generation is unavailable. OPENAI_API_KEY is not configured." },
       { status: 503 },
     );
   }
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Quiz generation failed:", error);
     return NextResponse.json(
-      { error: "Could not generate your quiz. Please try again." },
+      { error: getAiErrorMessage(error) },
       { status: 503 },
     );
   }

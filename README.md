@@ -10,7 +10,7 @@ AI-powered study companion for Filipino learners — built for hackathon MVP dep
 - Tailwind CSS v4
 - shadcn/ui
 - Lucide React
-- Google Gemini 2.5 Flash
+- OpenAI GPT-4o mini
 - Recharts
 - Serwist (PWA)
 
@@ -28,7 +28,7 @@ npm install
 cp .env.example .env.local
 ```
 
-3. Add your Gemini API key to `.env.local`.
+3. Add your OpenAI API key to `.env.local`.
 
 4. Run the development server:
 
@@ -53,8 +53,8 @@ src/
 ├── components/       # UI and feature components
 ├── context/          # React context (low data mode)
 ├── hooks/            # Custom hooks
-├── lib/              # Constants, types, utilities, Gemini
-└── prompts/          # Gemini prompt builders
+├── lib/              # Constants, types, utilities, OpenAI client
+└── prompts/          # AI prompt builders
 ```
 
 ## Development Phases
@@ -63,7 +63,7 @@ src/
 2. ✅ Landing page
 3. ✅ Onboarding
 4. ✅ Learning session
-5. ✅ Gemini integration
+5. ✅ OpenAI integration
 6. ✅ Quiz flow
 7. ✅ Adaptive learning
 8. ✅ Progress dashboard
@@ -73,4 +73,4 @@ src/
 
 ## Deploy on Vercel
 
-Push to GitHub and import the repo in Vercel. Set `GEMINI_API_KEY` and `NEXT_PUBLIC_APP_URL` in project environment variables.
+Push to GitHub and import the repo in Vercel. Set `OPENAI_API_KEY` and `NEXT_PUBLIC_APP_URL` in project environment variables.
