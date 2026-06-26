@@ -1,20 +1,34 @@
-export type Grade = 4 | 5 | 6;
+export type Grade = 1 | 2 | 3 | 4 | 5 | 6;
 
-export type Subject = "science";
+export type Subject =
+  | "mathematics"
+  | "science"
+  | "english"
+  | "filipino"
+  | "araling-panlipunan"
+  | "esp"
+  | "mapeh"
+  | "ict"
+  | "mother-tongue";
 
 export type LanguagePreference = "english" | "filipino" | "taglish";
 
-export type LearningGoal =
-  | "exam-preparation"
-  | "homework-help"
-  | "understand-concepts"
-  | "resume-lesson";
+export type TopicDifficulty = "easy" | "moderate" | "challenging";
+
+export interface SelectedTopic {
+  id: string;
+  title: string;
+  description: string;
+  focus: string;
+  estimatedReadingMinutes: number;
+  difficulty: TopicDifficulty;
+}
 
 export interface UserProfile {
   grade: Grade;
   subject: Subject;
   language: LanguagePreference;
-  goal: LearningGoal;
+  selectedTopic: SelectedTopic;
 }
 
 export interface LessonContent {
@@ -77,4 +91,11 @@ export interface ProgressSnapshot {
   todaysGoalLessons: number;
   /** Quiz sessions completed per local day, keyed by yyyy-mm-dd. */
   dailySessions: Record<string, number>;
+}
+
+export interface TopicSuggestion {
+  title: string;
+  description: string;
+  estimatedReadingMinutes: number;
+  difficulty: TopicDifficulty;
 }

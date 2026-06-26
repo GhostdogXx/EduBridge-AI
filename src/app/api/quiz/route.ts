@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { getTopic } from "@/lib/curriculum";
 import { generateStructured } from "@/lib/gemini/client";
 import { hasGeminiKey } from "@/lib/gemini/config";
-import { getMockQuiz } from "@/lib/mock/quizzes";
+import { resolveLessonTopic } from "@/lib/topic-utils";
 import type { QuizResponse } from "@/lib/types/api";
 import {
   quizRequestSchema,
@@ -31,20 +30,16 @@ export async function POST(request: Request) {
   }
 
   const { profile, topicId, lowDataMode } = parsed.data;
-  const topic = getTopic(topicId);
+  const topic = resolveLessonTopic(topicId, profile);
   if (!topic) {
     return NextResponse.json({ error: "Unknown topic." }, { status: 404 });
   }
 
-  const fallback = (): QuizResponse => ({
-    topicId: topic.id,
-    topic: topic.topic,
-    questions: getMockQuiz(topic.id, lowDataMode),
-    source: "fallback",
-  });
-
   if (!hasGeminiKey()) {
-    return NextResponse.json(fallback());
+    return NextResponse.json(
+      { error: "Quiz generation is unavailable. GEMINI_API_KEY is not configured." },
+      { status: 503 },
+    );
   }
 
   try {
@@ -57,13 +52,16 @@ export async function POST(request: Request) {
 
     const response: QuizResponse = {
       topicId: topic.id,
-      topic: topic.topic,
+      topic: topic.title,
       questions: toQuizQuestions(quizSet),
       source: "ai",
     };
     return NextResponse.json(response);
   } catch (error) {
     console.error("Quiz generation failed:", error);
-    return NextResponse.json(fallback());
+    return NextResponse.json(
+      { error: "Could not generate your quiz. Please try again." },
+      { status: 503 },
+    );
   }
 }

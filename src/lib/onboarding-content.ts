@@ -1,15 +1,14 @@
 export type OnboardingIcon =
+  | "grade-1"
+  | "grade-2"
+  | "grade-3"
   | "grade-4"
   | "grade-5"
   | "grade-6"
   | "science"
   | "english"
   | "filipino"
-  | "taglish"
-  | "exam"
-  | "homework"
-  | "concepts"
-  | "resume";
+  | "taglish";
 
 export interface OnboardingOption<TValue> {
   value: TValue;

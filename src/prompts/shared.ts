@@ -1,19 +1,40 @@
-import type {
-  Grade,
-  LanguagePreference,
-  LearningGoal,
-  LessonVariant,
-} from "@/lib/types/learning";
+import type { Grade, LanguagePreference, Subject } from "@/lib/types/learning";
+import { getSubjectLabel } from "@/lib/subjects";
+
+/** Rules for AI-generated content when the learner chose Filipino. */
+export const SIMPLE_FILIPINO_RULES = [
+  "Write ONLY in simple, everyday Filipino that elementary students hear at home and in school.",
+  "Do NOT use deep, old-fashioned, or highly formal Filipino (avoid: isakatuparan, mangyaring, nais, naaangkop, kahilingan, nilalaman, nabuo, pagkakahanay, kompetensi, ipagpatuloy, pagganap, pagtatanghal).",
+  "Use short, clear sentences. Explain hard ideas with simple words.",
+  "If a technical term is needed, explain it right away in simple Filipino.",
+  "Be friendly and encouraging — like a kind elementary school teacher.",
+  "Do NOT mix English unless there is no common Filipino word (e.g. quiz, computer, internet).",
+  "PREFER everyday words: gawin, piliin, susunod, simulan, basahin, subukan, aralin, tanong, tulong, galing, kaya mo.",
+].join(" ");
+
+export function isFilipinoLanguage(language: LanguagePreference): boolean {
+  return language === "filipino";
+}
 
 export function gradeGuidance(grade: Grade): string {
   switch (grade) {
+    case 1:
+      return "The student is in Grade 1 (around 6-7 years old). Use the simplest words, very short sentences, and concrete examples.";
+    case 2:
+      return "The student is in Grade 2 (around 7-8 years old). Use simple words and short sentences with familiar examples.";
+    case 3:
+      return "The student is in Grade 3 (around 8-9 years old). Use simple, clear language and everyday vocabulary.";
     case 4:
-      return "The student is in Grade 4 (around 9-10 years old). Use very simple, short sentences and the most basic vocabulary.";
+      return "The student is in Grade 4 (around 9-10 years old). Use very simple, short sentences and basic vocabulary.";
     case 5:
       return "The student is in Grade 5 (around 10-11 years old). Use simple, clear sentences and everyday vocabulary.";
     case 6:
-      return "The student is in Grade 6 (around 11-12 years old). Use clear sentences and grade-appropriate vocabulary; you may introduce a few key science terms with explanations.";
+      return "The student is in Grade 6 (around 11-12 years old). Use clear sentences and grade-appropriate vocabulary; explain any key terms simply.";
   }
+}
+
+export function subjectGuidance(subject: Subject): string {
+  return `Subject: ${getSubjectLabel(subject)}. Follow Philippine DepEd K–12 elementary curriculum for this subject and grade. Never suggest high school or college topics.`;
 }
 
 export function languageGuidance(language: LanguagePreference): string {
@@ -21,23 +42,22 @@ export function languageGuidance(language: LanguagePreference): string {
     case "english":
       return "The student prefers English. Keep the simpleExplanation in clear English. Still provide the taglishExplanation field in natural Taglish as a friendly second take.";
     case "filipino":
-      return "The student prefers Filipino. Make the taglishExplanation lean more towards Filipino. Keep the simpleExplanation in clear, simple English so they can connect both.";
+      return [
+        "The student prefers Filipino. ALL generated text for this student must be in simple everyday Filipino at an elementary reading level.",
+        SIMPLE_FILIPINO_RULES,
+        "For lessons: write simpleExplanation as the main lesson in simple Filipino; write taglishExplanation as a second, friendlier explanation also in simple Filipino (NOT English, NOT Taglish); write filipinoExample as a real-life example in simple Filipino.",
+        "For quizzes: write every question, all four options, and every explanation in simple Filipino only.",
+        "For topic suggestions: write category, titles, and descriptions in simple Filipino only.",
+        "For feedback: write headline, feedback, and tips in simple Filipino only.",
+      ].join(" ");
     case "taglish":
       return "The student prefers Taglish. Make the taglishExplanation feel natural and conversational, mixing English and Filipino the way Filipino students actually speak.";
   }
 }
 
-export function goalGuidance(goal: LearningGoal): string {
-  switch (goal) {
-    case "exam-preparation":
-      return "The student is preparing for quarterly exams, so emphasize the most testable key points.";
-    case "homework-help":
-      return "The student wants help understanding today's assignment, so be practical and direct.";
-    case "understand-concepts":
-      return "The student wants to deeply understand the concept, so build intuition with relatable examples.";
-    case "resume-lesson":
-      return "The student is resuming learning, so briefly reconnect them to the topic before going deeper.";
-  }
+export function filipinoContentBlock(language: LanguagePreference): string | null {
+  if (!isFilipinoLanguage(language)) return null;
+  return ["FILIPINO LANGUAGE (REQUIRED):", SIMPLE_FILIPINO_RULES].join("\n");
 }
 
 export const TAGLISH_RULES = [
@@ -75,19 +95,24 @@ export function lowDataEvaluationRules(lowDataMode: boolean): string | null {
  * quiz score; the model only changes HOW it explains, not the path.
  */
 export function variantGuidance(
-  variant: LessonVariant,
+  variant: import("@/lib/types/learning").LessonVariant,
   prerequisiteTopic?: string,
+  language?: LanguagePreference,
 ): string | null {
+  const filipinoNote = isFilipinoLanguage(language ?? "english")
+    ? " Use simple everyday Filipino only."
+    : "";
+
   switch (variant) {
     case "standard":
       return null;
     case "another-explanation":
-      return "RE-TEACH: The student found this a little tricky. Explain it a DIFFERENT way than a standard textbook — use a fresh analogy and a new everyday Filipino example. Be extra encouraging.";
+      return `RE-TEACH: The student found this a little tricky. Explain it a DIFFERENT way than a standard textbook — use a fresh analogy and a new everyday Filipino example. Be extra encouraging.${filipinoNote}`;
     case "simplified": {
       const prereq = prerequisiteTopic
         ? ` Briefly remind them of the related idea of \"${prerequisiteTopic}\" in one short sentence to rebuild their foundation.`
         : "";
-      return `SIMPLIFY: The student struggled with this topic. Use the simplest possible words and very short sentences. Slow down and break the idea into tiny, easy steps.${prereq} Be warm and reassuring — make them feel capable, never behind.`;
+      return `SIMPLIFY: The student struggled with this topic. Use the simplest possible words and very short sentences. Slow down and break the idea into tiny, easy steps.${prereq} Be warm and reassuring — make them feel capable, never behind.${filipinoNote}`;
     }
   }
 }

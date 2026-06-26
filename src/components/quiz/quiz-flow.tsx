@@ -23,7 +23,8 @@ interface QuizFlowProps {
 export function QuizFlow({ topicId }: QuizFlowProps) {
   const router = useRouter();
   const { userProfile, isHydrated } = useAppContext();
-  const { data, status, reload } = useQuiz(topicId);
+  const effectiveTopicId = topicId || userProfile?.selectedTopic?.id || "";
+  const { data, status, reload } = useQuiz(effectiveTopicId);
   const { recordQuizSession } = useProgress();
   const { recordQuizResult } = useLearningPath();
   const t = useT();
@@ -32,7 +33,7 @@ export function QuizFlow({ topicId }: QuizFlowProps) {
   const [score, setScore] = useState(0);
   const [result, setResult] = useState<QuizResult | null>(null);
 
-  const backHref = `/learn?lesson=${topicId}`;
+  const backHref = `/learn?lesson=${effectiveTopicId}`;
 
   useEffect(() => {
     if (isHydrated && !userProfile) {
@@ -43,7 +44,7 @@ export function QuizFlow({ topicId }: QuizFlowProps) {
   const questions = data?.questions ?? [];
 
   const recordCompletion = (finalResult: QuizResult) => {
-    recordQuizResult(topicId, finalResult);
+    recordQuizResult(effectiveTopicId, finalResult);
     recordQuizSession({
       accuracy: finalResult.percentage,
       understanding: finalResult.percentage,
@@ -84,7 +85,7 @@ export function QuizFlow({ topicId }: QuizFlowProps) {
     return (
       <QuizResults
         result={result}
-        topicId={topicId}
+        topicId={effectiveTopicId}
         topic={data?.topic ?? t.quiz.thisTopic}
         onRetry={handleRetry}
       />

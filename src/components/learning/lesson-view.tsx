@@ -19,7 +19,7 @@ import { LessonSkeleton } from "@/components/learning/lesson-skeleton";
 import { OfflineBanner } from "@/components/learning/offline-banner";
 import { QuickCheck } from "@/components/learning/quick-check";
 import { useAppContext } from "@/context/app-context";
-import { getTopic } from "@/lib/curriculum";
+import { resolveLessonTopic } from "@/lib/topic-utils";
 import { useLearningPath } from "@/hooks/use-learning-path";
 import { useLesson } from "@/hooks/use-lesson";
 import { useT } from "@/lib/i18n";
@@ -41,13 +41,16 @@ export function LessonView({
   const { userProfile, isHydrated, lowDataMode } = useAppContext();
   const { isLoaded: pathLoaded, recommendedTopicId } = useLearningPath();
   const [activeVariant, setActiveVariant] = useState<LessonVariant>(variant);
-  const { data, status, reload } = useLesson(topicId, activeVariant);
+  const effectiveTopicId =
+    topicId || userProfile?.selectedTopic?.id || recommendedTopicId();
+
+  const { data, status, errorMessage, reload } = useLesson(effectiveTopicId, activeVariant);
   const t = useT();
   const quickCheckRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setActiveVariant(variant);
-  }, [variant, topicId]);
+  }, [variant, effectiveTopicId]);
 
   useEffect(() => {
     if (isHydrated && !userProfile) {
@@ -55,20 +58,22 @@ export function LessonView({
     }
   }, [isHydrated, userProfile, router]);
 
-  // Resume: when no explicit topic was requested, jump to the recommended one.
+  // Resume legacy paths only when no explicit or profile topic exists.
   useEffect(() => {
-    if (!explicit && pathLoaded && userProfile) {
-      const recommended = recommendedTopicId();
-      if (recommended !== topicId) {
-        router.replace(`/learn?lesson=${recommended}`);
-      }
+    if (explicit || !pathLoaded || !userProfile || userProfile.selectedTopic) {
+      return;
+    }
+
+    const recommended = recommendedTopicId();
+    if (recommended !== effectiveTopicId) {
+      router.replace(`/learn?lesson=${recommended}`);
     }
   }, [
     explicit,
     pathLoaded,
     userProfile,
     recommendedTopicId,
-    topicId,
+    effectiveTopicId,
     router,
   ]);
 
@@ -80,24 +85,37 @@ export function LessonView({
   };
 
   const handleStartQuiz = () => {
-    router.push(`/quiz?lesson=${topicId}`);
+    router.push(`/quiz?lesson=${effectiveTopicId}`);
   };
 
-  if (!isHydrated || !userProfile || status === "loading" || status === "idle") {
+  if (
+    !isHydrated ||
+    !userProfile ||
+    !effectiveTopicId ||
+    status === "loading" ||
+    status === "idle"
+  ) {
     return <LessonSkeleton />;
   }
 
   if (status === "error" || !data) {
-    return <LessonError onRetry={reload} />;
+    return <LessonError onRetry={reload} message={errorMessage} />;
   }
 
   const { lesson, topic, source } = data;
-  const alignment = getTopic(topicId)?.alignment;
+  const alignment = userProfile
+    ? resolveLessonTopic(effectiveTopicId, userProfile)?.alignment
+    : undefined;
 
   const handleTeachDifferently = () => {
     setActiveVariant("another-explanation");
     window.scrollTo({ top: 0, behavior: lowDataMode ? "auto" : "smooth" });
   };
+
+  const secondSectionLabel =
+    userProfile.language === "filipino"
+      ? t.learn.sections.filipinoSecond
+      : t.learn.sections.taglish;
 
   return (
     <div className="flex flex-col gap-5">
@@ -123,7 +141,7 @@ export function LessonView({
 
       <LessonSectionCard
         icon={MessageSquareText}
-        label={t.learn.sections.taglish}
+        label={secondSectionLabel}
         tone="accent"
       >
         {lesson.taglishExplanation}

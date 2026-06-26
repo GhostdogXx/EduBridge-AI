@@ -9,6 +9,7 @@ import {
   lessonContentSchema,
   quizSetSchema,
   safeParseUserProfile,
+  topicDiscoverySchema,
   toQuizQuestions,
 } from "@/lib/validation";
 
@@ -32,12 +33,19 @@ describe("curriculum", () => {
 });
 
 describe("safeParseUserProfile", () => {
-  it("accepts a valid profile", () => {
+  it("accepts a valid profile with selected topic", () => {
     const result = safeParseUserProfile({
       grade: 6,
       subject: "science",
       language: "filipino",
-      goal: "exam-preparation",
+      selectedTopic: {
+        id: "parts-of-plants",
+        title: "Parts of Plants",
+        description: "Learn plant parts.",
+        focus: "Learn plant parts.",
+        estimatedReadingMinutes: 3,
+        difficulty: "easy",
+      },
     });
     expect(result.success).toBe(true);
   });
@@ -48,18 +56,42 @@ describe("safeParseUserProfile", () => {
         grade: 7,
         subject: "science",
         language: "filipino",
-        goal: "exam-preparation",
+        selectedTopic: {
+          id: "parts-of-plants",
+          title: "Parts of Plants",
+          description: "Learn plant parts.",
+          focus: "Learn plant parts.",
+          estimatedReadingMinutes: 3,
+          difficulty: "easy",
+        },
       }).success,
     ).toBe(false);
 
     expect(
       safeParseUserProfile({
         grade: 6,
-        subject: "math",
+        subject: "science",
         language: "filipino",
         goal: "exam-preparation",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("topic discovery schema", () => {
+  it("validates topic suggestions from Gemini", () => {
+    const parsed = topicDiscoverySchema.safeParse({
+      category: "Biology",
+      topics: [
+        {
+          title: "Parts of Plants",
+          description: "Learn the different parts of a plant.",
+          estimatedReadingMinutes: 3,
+          difficulty: "easy",
+        },
+      ],
+    });
+    expect(parsed.success).toBe(true);
   });
 });
 

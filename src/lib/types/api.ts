@@ -2,9 +2,13 @@ import type {
   AdaptiveRecommendation,
   ContentSource,
   EvaluationFeedback,
+  Grade,
+  LanguagePreference,
   LessonContent,
   LessonVariant,
   QuizQuestion,
+  Subject,
+  TopicSuggestion,
   UserProfile,
 } from "@/lib/types/learning";
 
@@ -51,4 +55,18 @@ export interface EvaluationResponse {
 
 export interface ApiErrorResponse {
   error: string;
+}
+
+export interface TopicsRequest {
+  grade: Grade;
+  subject: Subject;
+  language: LanguagePreference;
+  keyword: string;
+  lowDataMode?: boolean;
+}
+
+export interface TopicsResponse {
+  category: string;
+  topics: TopicSuggestion[];
+  source: ContentSource;
 }

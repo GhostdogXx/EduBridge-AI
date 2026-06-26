@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { getTopic } from "@/lib/curriculum";
 import { generateStructured } from "@/lib/gemini/client";
 import { hasGeminiKey } from "@/lib/gemini/config";
 import { getFallbackEvaluation } from "@/lib/mock/evaluation";
+import { resolveLessonTopic } from "@/lib/topic-utils";
 import type { EvaluationResponse } from "@/lib/types/api";
 import { evaluationRequestSchema, evaluationSchema } from "@/lib/validation";
 import { buildEvaluationPrompt } from "@/prompts/evaluation-prompt";
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
   const { profile, topicId, score, total, recommendation, lowDataMode } =
     parsed.data;
-  const topic = getTopic(topicId);
+  const topic = resolveLessonTopic(topicId, profile);
   if (!topic) {
     return NextResponse.json({ error: "Unknown topic." }, { status: 404 });
   }

@@ -8,10 +8,12 @@ import { LanguageToggle } from "@/components/layout/language-toggle";
 import { LowDataToggle } from "@/components/layout/low-data-toggle";
 import { useProgress } from "@/hooks/use-progress";
 import { APP_NAME } from "@/lib/constants";
+import { useAppContext } from "@/context/app-context";
 import { useT } from "@/lib/i18n";
 
 interface TopNavProps {
   title?: string;
+  topicId?: string;
   showLessonControls?: boolean;
   showBack?: boolean;
   backHref?: string;
@@ -19,13 +21,23 @@ interface TopNavProps {
 
 export function TopNav({
   title,
+  topicId,
   showLessonControls = false,
   showBack = false,
   backHref,
 }: TopNavProps) {
   const { progress, isLoaded } = useProgress();
+  const { userProfile } = useAppContext();
   const t = useT();
   const streakDays = isLoaded ? progress.streakDays : 0;
+
+  const selectedTopicTitle =
+    userProfile?.selectedTopic &&
+    (!topicId || userProfile.selectedTopic.id === topicId)
+      ? userProfile.selectedTopic.title
+      : undefined;
+
+  const displayTitle = selectedTopicTitle ?? title ?? APP_NAME;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md low-data:bg-background low-data:backdrop-blur-none">
@@ -46,7 +58,7 @@ export function TopNav({
 
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-foreground sm:text-base">
-            {title ?? APP_NAME}
+            {displayTitle}
           </p>
         </div>
 

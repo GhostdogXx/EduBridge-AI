@@ -5,6 +5,7 @@ import { TopNav } from "@/components/layout/top-nav";
 interface AppShellProps {
   children: React.ReactNode;
   title?: string;
+  topicId?: string;
   showLessonControls?: boolean;
   showBack?: boolean;
   backHref?: string;
@@ -13,6 +14,7 @@ interface AppShellProps {
 export function AppShell({
   children,
   title,
+  topicId,
   showLessonControls = false,
   showBack = false,
   backHref,
@@ -21,6 +23,7 @@ export function AppShell({
     <div className="flex min-h-screen flex-col bg-background">
       <TopNav
         title={title}
+        topicId={topicId}
         showLessonControls={showLessonControls}
         showBack={showBack}
         backHref={backHref}

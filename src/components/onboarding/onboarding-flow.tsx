@@ -1,88 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
 import { OnboardingProgress } from "@/components/onboarding/onboarding-progress";
 import { OnboardingStepView } from "@/components/onboarding/onboarding-step-view";
+import { SubjectCard } from "@/components/onboarding/subject-card";
+import { TopicInput } from "@/components/onboarding/topic-input";
+import { TopicSuggestionList } from "@/components/onboarding/topic-suggestion-list";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/context/app-context";
-import { useT } from "@/lib/i18n";
+import { STORAGE_KEYS } from "@/lib/constants";
+import { useT, useUiLanguage } from "@/lib/i18n";
+import { createPathForTopic } from "@/lib/learning-path";
 import type { OnboardingOption } from "@/lib/onboarding-content";
 import { TOTAL_ONBOARDING_STEPS } from "@/lib/onboarding-content";
+import { SUBJECT_DEFINITIONS } from "@/lib/subjects";
+import { createDiscoveredTopicId } from "@/lib/topic-utils";
 import type {
   Grade,
-  LanguagePreference,
-  LearningGoal,
+  SelectedTopic,
   Subject,
+  TopicSuggestion,
   UserProfile,
 } from "@/lib/types/learning";
+import type { TopicsResponse } from "@/lib/types/api";
 
 interface DraftProfile {
   grade?: Grade;
   subject?: Subject;
-  language?: LanguagePreference;
-  goal?: LearningGoal;
+  keyword?: string;
+  selectedTopic?: SelectedTopic;
 }
 
 export function OnboardingFlow() {
   const router = useRouter();
-  const { setUserProfile, lowDataMode, preferredLanguage, setPreferredLanguage } =
-    useAppContext();
+  const uiLanguage = useUiLanguage();
+  const { setUserProfile, lowDataMode, preferredLanguage } = useAppContext();
   const t = useT();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [languageTouched, setLanguageTouched] = useState(false);
-  const [draft, setDraft] = useState<DraftProfile>({
-    subject: "science",
-    language: preferredLanguage,
-  });
+  const [draft, setDraft] = useState<DraftProfile>({});
+  const [topicSuggestions, setTopicSuggestions] = useState<TopicSuggestion[]>([]);
+  const [topicCategory, setTopicCategory] = useState("");
+  const [topicsLoading, setTopicsLoading] = useState(false);
+  const [topicsError, setTopicsError] = useState(false);
+  const [topicsErrorMessage, setTopicsErrorMessage] = useState("");
 
-  useEffect(() => {
-    if (languageTouched) return;
-    setDraft((prev) => ({ ...prev, language: preferredLanguage }));
-  }, [preferredLanguage, languageTouched]);
+  const gradeOptions: OnboardingOption<Grade>[] = ([1, 2, 3, 4, 5, 6] as const).map(
+    (grade) => ({
+      value: grade,
+      icon: `grade-${grade}` as OnboardingOption<Grade>["icon"],
+      ...t.onboarding.grade.options[String(grade) as "1"],
+    }),
+  );
 
-  const gradeOptions: OnboardingOption<Grade>[] = [
-    { value: 4, icon: "grade-4", ...t.onboarding.grade.options["4"] },
-    { value: 5, icon: "grade-5", ...t.onboarding.grade.options["5"] },
-    { value: 6, icon: "grade-6", ...t.onboarding.grade.options["6"] },
-  ];
+  const subjectExamples =
+    t.onboarding.topicDiscovery.examplesBySubject[draft.subject ?? "science"];
 
-  const subjectOptions: OnboardingOption<Subject>[] = [
-    { value: "science", icon: "science", ...t.onboarding.subject.options.science },
-  ];
-
-  const languageOptions: OnboardingOption<LanguagePreference>[] = [
-    { value: "filipino", icon: "filipino", ...t.onboarding.language.options.filipino },
-    { value: "taglish", icon: "taglish", ...t.onboarding.language.options.taglish },
-    { value: "english", icon: "english", ...t.onboarding.language.options.english },
-  ];
-
-  const goalOptions: OnboardingOption<LearningGoal>[] = [
-    {
-      value: "exam-preparation",
-      icon: "exam",
-      ...t.onboarding.goal.options["exam-preparation"],
-    },
-    {
-      value: "homework-help",
-      icon: "homework",
-      ...t.onboarding.goal.options["homework-help"],
-    },
-    {
-      value: "understand-concepts",
-      icon: "concepts",
-      ...t.onboarding.goal.options["understand-concepts"],
-    },
-    {
-      value: "resume-lesson",
-      icon: "resume",
-      ...t.onboarding.goal.options["resume-lesson"],
-    },
-  ];
+  const curriculumBadge =
+    draft.grade && draft.subject
+      ? t.onboarding.topicSuggestions.badge(draft.grade, draft.subject)
+      : "";
 
   const isStepComplete = (() => {
     switch (currentStep) {
@@ -91,15 +72,66 @@ export function OnboardingFlow() {
       case 1:
         return draft.subject !== undefined;
       case 2:
-        return draft.language !== undefined;
+        return (draft.keyword?.trim().length ?? 0) > 0;
       case 3:
-        return draft.goal !== undefined;
+        return draft.selectedTopic !== undefined;
       default:
         return false;
     }
   })();
 
   const isFinalStep = currentStep === TOTAL_ONBOARDING_STEPS - 1;
+
+  const fetchTopics = async () => {
+    if (!draft.grade || !draft.subject || !draft.keyword?.trim()) {
+      return false;
+    }
+
+    setTopicsLoading(true);
+    setTopicsError(false);
+    setTopicsErrorMessage("");
+
+    try {
+      const response = await fetch("/api/topics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          grade: draft.grade,
+          subject: draft.subject,
+          language: preferredLanguage,
+          keyword: draft.keyword.trim(),
+          lowDataMode,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorBody = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setTopicsErrorMessage(
+          errorBody?.error ?? t.onboarding.topicSuggestions.error,
+        );
+        throw new Error("Topics request failed");
+      }
+
+      const json = (await response.json()) as TopicsResponse;
+
+      if (!json.topics?.length) {
+        setTopicsErrorMessage(t.onboarding.topicSuggestions.empty);
+        throw new Error("No topics returned");
+      }
+
+      setTopicCategory(json.category);
+      setTopicSuggestions(json.topics);
+      setDraft((prev) => ({ ...prev, selectedTopic: undefined }));
+      return true;
+    } catch {
+      setTopicsError(true);
+      return false;
+    } finally {
+      setTopicsLoading(false);
+    }
+  };
 
   const handleBack = () => {
     if (currentStep > 0) {
@@ -109,8 +141,14 @@ export function OnboardingFlow() {
     router.push("/");
   };
 
-  const handleContinue = () => {
-    if (!isStepComplete) return;
+  const handleContinue = async () => {
+    if (!isStepComplete || topicsLoading) return;
+
+    if (currentStep === 2) {
+      const ok = await fetchTopics();
+      if (ok) setCurrentStep(3);
+      return;
+    }
 
     if (!isFinalStep) {
       setCurrentStep((step) => step + 1);
@@ -120,12 +158,16 @@ export function OnboardingFlow() {
     const profile: UserProfile = {
       grade: draft.grade as Grade,
       subject: draft.subject as Subject,
-      language: draft.language as LanguagePreference,
-      goal: draft.goal as LearningGoal,
+      language: preferredLanguage,
+      selectedTopic: draft.selectedTopic as SelectedTopic,
     };
 
     setUserProfile(profile);
-    router.push("/learn");
+    window.localStorage.setItem(
+      STORAGE_KEYS.learningPath,
+      JSON.stringify(createPathForTopic(profile.selectedTopic.id)),
+    );
+    router.push(`/learn?lesson=${profile.selectedTopic.id}`);
   };
 
   const renderStep = () => {
@@ -142,46 +184,142 @@ export function OnboardingFlow() {
         );
       case 1:
         return (
-          <OnboardingStepView<Subject>
-            title={t.onboarding.subject.title}
-            subtitle={t.onboarding.subject.subtitle}
-            options={subjectOptions}
-            selectedValue={draft.subject}
-            onSelect={(subject) => setDraft((prev) => ({ ...prev, subject }))}
-          />
+          <div className="space-y-6">
+            <div className="space-y-2 text-center">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                {t.onboarding.subject.title}
+              </h2>
+              <p className="text-base text-muted-foreground sm:text-lg">
+                {t.onboarding.subject.subtitle}
+              </p>
+            </div>
+            <ul className="grid gap-4 sm:grid-cols-2" role="list">
+              {SUBJECT_DEFINITIONS.map((subject) => {
+                const label =
+                  uiLanguage === "en" ? subject.labelEn : subject.labelFil;
+                const description =
+                  uiLanguage === "en"
+                    ? subject.descriptionEn
+                    : subject.descriptionFil;
+
+                return (
+                  <li key={subject.id}>
+                    <SubjectCard
+                      subject={subject}
+                      label={label}
+                      description={description}
+                      selected={draft.subject === subject.id}
+                      onSelect={() =>
+                        setDraft((prev) => ({
+                          ...prev,
+                          subject: subject.id,
+                          keyword: "",
+                          selectedTopic: undefined,
+                        }))
+                      }
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         );
       case 2:
         return (
-          <OnboardingStepView<LanguagePreference>
-            title={t.onboarding.language.title}
-            subtitle={t.onboarding.language.subtitle}
-            options={languageOptions}
-            selectedValue={draft.language}
-            onSelect={(language) => {
-              setLanguageTouched(true);
-              setPreferredLanguage(language);
-              setDraft((prev) => ({ ...prev, language }));
-            }}
-          />
+          <div className="space-y-4">
+            <TopicInput
+              title={t.onboarding.topicDiscovery.prompt(
+                draft.subject ?? "science",
+              )}
+              placeholder={t.onboarding.topicDiscovery.placeholder}
+              examples={subjectExamples}
+              value={draft.keyword ?? ""}
+              onChange={(keyword) => {
+                setTopicsError(false);
+                setTopicsErrorMessage("");
+                setTopicSuggestions([]);
+                setDraft((prev) => ({ ...prev, keyword, selectedTopic: undefined }));
+              }}
+            />
+            {topicsError ? (
+              <div className="space-y-3 rounded-2xl bg-destructive/10 px-4 py-3 text-center">
+                <p className="text-sm text-destructive">
+                  {topicsErrorMessage || t.onboarding.topicSuggestions.error}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void fetchTopics()}
+                  disabled={topicsLoading}
+                  className="h-11 rounded-2xl"
+                >
+                  {t.common.tryAgain}
+                </Button>
+              </div>
+            ) : null}
+          </div>
         );
       case 3:
         return (
-          <OnboardingStepView<LearningGoal>
-            title={t.onboarding.goal.title}
-            subtitle={t.onboarding.goal.subtitle}
-            options={goalOptions}
-            selectedValue={draft.goal}
-            onSelect={(goal) => setDraft((prev) => ({ ...prev, goal }))}
-          />
+          <div className="space-y-6">
+            <div className="space-y-2 text-center">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                {t.onboarding.topicSuggestions.title}
+              </h2>
+              <p className="text-base text-muted-foreground sm:text-lg">
+                {topicCategory
+                  ? t.onboarding.topicSuggestions.subtitle(topicCategory)
+                  : t.onboarding.topicSuggestions.subtitleGeneric}
+              </p>
+            </div>
+
+            {topicsError ? (
+              <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+                {t.onboarding.topicSuggestions.error}
+              </p>
+            ) : null}
+
+            <TopicSuggestionList
+              topics={topicSuggestions}
+              selectedTitle={draft.selectedTopic?.title ?? null}
+              badge={curriculumBadge}
+              readingTimeLabel={t.onboarding.topicSuggestions.readingTime}
+              difficultyLabels={t.onboarding.topicSuggestions.difficulty}
+              onSelect={(topic) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  selectedTopic: {
+                    id: createDiscoveredTopicId(topic.title),
+                    title: topic.title,
+                    description: topic.description,
+                    focus: `${topic.title}: ${topic.description}`,
+                    estimatedReadingMinutes: topic.estimatedReadingMinutes,
+                    difficulty: topic.difficulty,
+                  },
+                }))
+              }
+            />
+          </div>
         );
       default:
         return null;
     }
   };
 
+  const continueLabel =
+    currentStep === 2
+      ? t.onboarding.topicDiscovery.continue
+      : isFinalStep
+        ? t.onboarding.startLearning
+        : t.onboarding.continue;
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5 py-8 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:py-12">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 py-8 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:py-12"
+      >
         <div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary">
           <Sparkles className="size-4" aria-hidden="true" />
           {t.onboarding.eyebrow}
@@ -214,26 +352,33 @@ export function OnboardingFlow() {
 
         <div className="sticky bottom-0 mt-8 flex flex-col gap-3 bg-background/90 pb-2 pt-4 backdrop-blur-sm">
           <Button
-            onClick={handleContinue}
-            disabled={!isStepComplete}
+            onClick={() => void handleContinue()}
+            disabled={!isStepComplete || topicsLoading}
             className="h-14 w-full rounded-2xl text-base font-semibold shadow-md shadow-primary/20"
-            aria-label={isFinalStep ? t.onboarding.startLearning : t.onboarding.continue}
+            aria-label={continueLabel}
           >
-            {isFinalStep ? t.onboarding.startLearning : t.onboarding.continue}
-            <ArrowRight className="size-5" aria-hidden="true" />
+            {topicsLoading ? (
+              <>
+                <Loader2 className="size-5 animate-spin" aria-hidden="true" />
+                {t.onboarding.topicDiscovery.loading}
+              </>
+            ) : (
+              <>
+                {continueLabel}
+                <ArrowRight className="size-5" aria-hidden="true" />
+              </>
+            )}
           </Button>
 
-          {currentStep >= 0 ? (
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              className="h-11 w-full rounded-2xl text-base font-medium"
-              aria-label={t.onboarding.back}
-            >
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              {t.onboarding.back}
-            </Button>
-          ) : null}
+          <Button
+            variant="ghost"
+            onClick={handleBack}
+            className="h-11 w-full rounded-2xl text-base font-medium"
+            aria-label={t.onboarding.back}
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            {t.onboarding.back}
+          </Button>
         </div>
       </main>
     </div>

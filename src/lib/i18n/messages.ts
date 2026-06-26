@@ -5,6 +5,9 @@ export type UiLanguage = "en" | "fil";
 /**
  * UI chrome is rendered in English or Filipino. Taglish learners get Filipino
  * chrome (their lesson *content* is still generated in Taglish by the model).
+ *
+ * Filipino strings use simple, everyday language for elementary students —
+ * short sentences, common words, friendly tone. Avoid formal or archaic Filipino.
  */
 export function resolveUiLanguage(pref: LanguagePreference): UiLanguage {
   return pref === "english" ? "en" : "fil";
@@ -32,7 +35,7 @@ const en = {
   },
   landing: {
     hero: {
-      badge: "For Grades 4–6 · Science · Taglish-friendly",
+      badge: "For Grades 1–6 · All subjects · Taglish-friendly",
       title: "Learn Smarter, One Lesson at a Time.",
       subtitle:
         "Your AI-powered study companion designed for Filipino learners with bilingual lessons, adaptive quizzes, and personalized guidance.",
@@ -115,6 +118,11 @@ const en = {
     },
     languageChoice: {
       heading: "Choose your language",
+      options: {
+        filipino: { label: "Filipino", description: "Lessons in Filipino" },
+        taglish: { label: "Taglish", description: "A mix of English and Filipino" },
+        english: { label: "English", description: "Lessons in English" },
+      },
     },
   },
   nav: {
@@ -131,7 +139,7 @@ const en = {
     toggleAria: "Toggle Low Data Mode",
   },
   onboarding: {
-    eyebrow: "Quick setup · Less than 30 seconds",
+    eyebrow: "Let's find your next lesson",
     step: (n: number, total: number) => `Step ${n} of ${total}`,
     continue: "Continue",
     startLearning: "Start Learning",
@@ -140,14 +148,17 @@ const en = {
       title: "What grade are you in?",
       subtitle: "We'll match lessons to your level.",
       options: {
+        "1": { label: "Grade 1", description: "Starting your learning journey" },
+        "2": { label: "Grade 2", description: "Growing every day" },
+        "3": { label: "Grade 3", description: "Building confidence" },
         "4": { label: "Grade 4", description: "Building strong foundations" },
         "5": { label: "Grade 5", description: "Growing your knowledge" },
         "6": { label: "Grade 6", description: "Preparing for the next level" },
       },
     },
     subject: {
-      title: "What do you want to study?",
-      subtitle: "More subjects are coming soon.",
+      title: "Choose a subject",
+      subtitle: "Pick what you'd like to explore today.",
       options: {
         science: { label: "Science", description: "Explore how the world works" },
       },
@@ -159,6 +170,64 @@ const en = {
         filipino: { label: "Filipino", description: "Lessons in Filipino" },
         taglish: { label: "Taglish", description: "A mix of English and Filipino" },
         english: { label: "English", description: "Lessons fully in English" },
+      },
+    },
+    topicDiscovery: {
+      prompt: (subject: string) => {
+        const labels: Record<string, string> = {
+          mathematics: "Mathematics",
+          science: "Science",
+          english: "English",
+          filipino: "Filipino",
+          "araling-panlipunan": "Araling Panlipunan",
+          esp: "ESP",
+          mapeh: "MAPEH",
+          ict: "ICT",
+          "mother-tongue": "Mother Tongue",
+        };
+        return `What would you like to learn in ${labels[subject] ?? "this subject"} today?`;
+      },
+      placeholder: "Type a topic or keyword…",
+      continue: "Find Topics",
+      loading: "Finding topics for you…",
+      examplesBySubject: {
+        mathematics: ["Addition", "Fractions", "Shapes", "Time", "Money"],
+        science: ["Plants", "Biology", "Solar System", "Human Body", "Magnets"],
+        english: ["Reading", "Grammar", "Vocabulary", "Writing", "Stories"],
+        filipino: ["Pagbasa", "Gramatika", "Talasalitaan", "Pagsulat", "Kuwento"],
+        "araling-panlipunan": ["Community", "History", "Geography", "Leaders", "Culture"],
+        esp: ["Values", "Respect", "Kindness", "Honesty", "Family"],
+        mapeh: ["Music", "Art", "PE", "Health", "Dance"],
+        ict: ["Computer", "Keyboard", "Internet", "Safety", "Apps"],
+        "mother-tongue": ["Alpabet", "Sounds", "Words", "Stories", "Family"],
+      },
+    },
+    topicSuggestions: {
+      title: "Pick a topic to start",
+      subtitle: (category: string) => `Here are ${category} topics for your grade.`,
+      subtitleGeneric: "Choose the lesson that looks most interesting.",
+      error: "We couldn't find topics. Go back and try a different keyword.",
+      empty: "No topics were found for that keyword. Try a different word.",
+      retry: "Try Again",
+      badge: (grade: number, subject: string) => {
+        const labels: Record<string, string> = {
+          mathematics: "Mathematics",
+          science: "Science",
+          english: "English",
+          filipino: "Filipino",
+          "araling-panlipunan": "Araling Panlipunan",
+          esp: "ESP",
+          mapeh: "MAPEH",
+          ict: "ICT",
+          "mother-tongue": "Mother Tongue",
+        };
+        return `Grade ${grade} ${labels[subject] ?? subject}`;
+      },
+      readingTime: (minutes: number) => `${minutes} min read`,
+      difficulty: {
+        easy: "Easy",
+        moderate: "Moderate",
+        challenging: "Challenge",
       },
     },
     goal: {
@@ -199,6 +268,7 @@ const en = {
     sections: {
       simple: "Simple Explanation",
       taglish: "In Taglish",
+      filipinoSecond: "Another Explanation",
       example: "Real-life Example",
       whyItMatters: "Why It Matters",
     },
@@ -366,173 +436,238 @@ type Dictionary = typeof en;
 
 const fil: Dictionary = {
   a11y: {
-    skipToContent: "Lumaktaw sa pangunahing nilalaman",
-    primaryNav: "Pangunahing nabigasyon",
-    preferredLanguage: "Napiling wika",
-    quizChoices: "Mga pagpipilian ng sagot",
+    skipToContent: "Pumunta sa main content",
+    primaryNav: "Menu",
+    preferredLanguage: "Wika mo",
+    quizChoices: "Mga pagpipilian",
     selected: "Napili",
     notSelected: "Hindi napili",
     correctAnswer: "Tamang sagot",
-    yourAnswerWrong: "Iyong sagot — mali",
+    yourAnswerWrong: "Sagot mo — mali",
     optionLabel: (letter: string, text: string) => `${letter}. ${text}`,
   },
   common: {
-    tryAgain: "Subukan Muli",
+    tryAgain: "Subukan ulit",
     back: "Bumalik",
-    continue: "Magpatuloy",
-    loadingLesson: "Naglo-load ng iyong aralin…",
-    loadingQuiz: "Naglo-load ng iyong pagsusulit…",
-    loadingProgress: "Naglo-load ng iyong progreso…",
+    continue: "Susunod",
+    loadingLesson: "Kinukuha ang aralin mo…",
+    loadingQuiz: "Kinukuha ang quiz mo…",
+    loadingProgress: "Kinukuha ang progress mo…",
   },
   landing: {
     hero: {
-      badge: "Para sa Baitang 4–6 · Agham · Taglish-friendly",
-      title: "Mas Matalinong Pag-aaral, Isang Aralin sa Bawat Pagkakataon.",
+      badge: "Para sa Baitang 1–6 · Lahat ng asignatura",
+      title: "Matuto nang mas madali, isang aralin bawat isa.",
       subtitle:
-        "Ang iyong AI-powered na kasama sa pag-aaral, ginawa para sa mga Pilipinong mag-aaral — may mga araling bilingüal, adaptive na pagsusulit, at personalized na gabay.",
-      primaryCta: "Magsimulang Mag-aral",
-      secondaryCta: "Paano Ito Gumagana",
-      mockQuickCheck: "Mabilis na Pagsusuri",
-      mockCaption: "Mga lesson card — hindi chat bubbles",
+        "Kasama mo sa pag-aaral — may aralin, quiz, at tulong na akma sa iyo. Puwede sa Filipino, Taglish, o English.",
+      primaryCta: "Mag-aral na",
+      secondaryCta: "Paano gumagana",
+      mockQuickCheck: "Mabilis na tanong",
+      mockCaption: "Mga aralin — hindi chat",
     },
     problem: {
-      heading: "Ang problemang nilulutas namin",
+      heading: "Ang problemang tinutulungan namin",
       subheading:
-        "Milyun-milyong estudyante sa probinsya ang gustong matuto — ngunit hindi para sa kanila ginawa ang mga karaniwang kasangkapan.",
+        "Maraming batang gustong matuto — pero hindi lahat ng app ay para sa kanila.",
       points: {
         language: {
-          title: "Maling wika ng mga aralin",
-          body: "Karamihan ng learning apps ay umaasa sa matatas na English. Maraming Pilipinong estudyante ang mas natututo sa Filipino o Taglish.",
+          title: "Mali ang wika ng aralin",
+          body: "Karamihan ng app ay English lang. Maraming bata ang mas natututo sa Filipino o Taglish.",
         },
         connection: {
           title: "Mahina o walang internet",
-          body: "Ang mabibigat at laging-online na apps ay hindi gumagana sa budget na telepono na may limitadong data.",
+          body: "Mabibigat na app na laging kailangan ng internet ay hindi gumagana sa mababang data.",
         },
         guidance: {
-          title: "Walang gumagabay",
-          body: "Kapag walang gurong malapit, mahirap malaman kung ano ang susunod na pag-aralan o saan nagkamali.",
+          title: "Walang tumutulong",
+          body: "Kapag walang guro malapit, mahirap malaman kung ano ang susunod na aralin.",
         },
       },
     },
     features: {
-      heading: "Ginawa para sa paraan ng iyong pag-aaral",
+      heading: "Ginawa para sa iyo",
       subheading:
-        "Maayos na mga aralin na gagabay sa iyo nang hakbang-hakbang — hindi walang katapusang chat.",
+        "May sunod-sunod na aralin — hindi walang katapusang chat.",
       items: {
         "guided-lessons": {
-          title: "Gabay na mga Aralin",
+          title: "May gabay na aralin",
           description:
-            "Malinaw na paliwanag sa English, Filipino, o Taglish — may mga halimbawa mula sa pang-araw-araw na buhay, mula sa sakay ng jeep hanggang sari-sari store.",
+            "Malinaw na paliwanag sa English, Filipino, o Taglish — may halimbawa mula sa jeepney, sari-sari store, at paaralan.",
         },
         "adaptive-practice": {
-          title: "Adaptive na Pagsasanay",
+          title: "Quiz na akma sa iyo",
           description:
-            "Maiikling pagsusulit na umaangkop sa iyong pag-unawa. Mag-practice hanggang sigurado ka na, tapos magpatuloy.",
+            "Maikling quiz na tumutulong sa iyo. Mag-practice hanggang sigurado ka, tapos susunod na aralin.",
         },
         "personalized-progress": {
-          title: "Personalized na Progreso",
+          title: "Sinusubaybayan ang progress mo",
           description:
-            "Subaybayan ang iyong streak, accuracy, at susunod na inirerekomendang aralin. Alam mo lagi kung ano ang susunod.",
+            "Makikita mo ang streak mo, score mo, at susunod na aralin. Alam mo kung ano ang susunod.",
         },
       },
     },
     howItWorks: {
-      heading: "Paano Ito Gumagana",
-      subheading:
-        "Bawat session ay may simpleng daan — walang kalituhan, walang patumpik-tumpik.",
+      heading: "Paano gumagana",
+      subheading: "Simple lang — aral, quiz, tapos susunod.",
       steps: {
         "1": {
           title: "Mag-aral",
           description:
-            "Magbasa ng maikling aralin na ginawa para sa iyong baitang, may mga halimbawang pamilyar sa pang-araw-araw na buhay.",
+            "Basahin ang maikling aralin para sa baitang mo. May halimbawa mula sa totoong buhay.",
         },
         "2": {
-          title: "Magsanay",
+          title: "Mag-quiz",
           description:
-            "Sagutin ang maiikling tanong nang isa-isa para masuri ang iyong naunawaan.",
+            "Sagutin ang maikling tanong para makita kung naintindihan mo.",
         },
         "3": {
           title: "Gumaling",
           description:
-            "Makakuha ng kapaki-pakinabang na feedback at karagdagang pagsasanay kung kailangan — walang hiya, laging may paghikayat.",
+            "May tulong at dagdag na practice kung kailangan. Walang hiya — may papuri.",
         },
         "4": {
           title: "Magpatuloy",
           description:
-            "I-unlock ang susunod na aralin o ipagpatuloy kung saan ka tumigil. Panatilihin ang iyong streak!",
+            "Susunod na aralin o ituloy kung saan ka tumigil. Panatilihin ang streak mo!",
         },
       },
     },
     footer: {
       ready: "Handa ka na bang mag-aral?",
-      tagline: "Ginawa nang may malasakit para sa mga Pilipinong mag-aaral.",
+      tagline: "Ginawa para sa mga batang Pilipino.",
     },
     languageChoice: {
-      heading: "Piliin ang iyong wika",
+      heading: "Piliin ang wika mo",
+      options: {
+        filipino: { label: "Filipino", description: "Aralin sa Filipino" },
+        taglish: { label: "Taglish", description: "Halong English at Filipino" },
+        english: { label: "English", description: "Aralin sa English" },
+      },
     },
   },
   nav: {
     learn: "Aralin",
-    progress: "Progreso",
-    settings: "Mga Setting",
-    streakAria: (days: number) => `Streak ng pag-aaral: ${days} araw`,
+    progress: "Progress",
+    settings: "Settings",
+    streakAria: (days: number) => `Streak: ${days} araw na nag-aaral`,
   },
   lowData: {
-    compact: "Tipid Data",
-    title: "Tipid Data Mode",
-    description: "Mas magaang aralin, walang animation, mas kaunting data.",
-    activeHint: "Mas magaan na pahina at maiikling aralin para makatipid ng data.",
-    toggleAria: "I-toggle ang Tipid Data Mode",
+    compact: "Tipid data",
+    title: "Tipid data mode",
+    description: "Mas maikling aralin, walang animation, mas kaunting data.",
+    activeHint: "Mas magaan ang pahina para makatipid ng data.",
+    toggleAria: "Buksan o isara ang tipid data mode",
   },
   onboarding: {
-    eyebrow: "Mabilis na setup · Wala pang 30 segundo",
-    step: (n: number, total: number) => `Hakbang ${n} ng ${total}`,
-    continue: "Magpatuloy",
-    startLearning: "Magsimulang Mag-aral",
+    eyebrow: "Hanapin ang susunod mong aralin",
+    step: (n: number, total: number) => `Hakbang ${n} sa ${total}`,
+    continue: "Susunod",
+    startLearning: "Mag-aral na",
     back: "Bumalik",
     grade: {
-      title: "Anong baitang ka na?",
-      subtitle: "Itutugma namin ang mga aralin sa iyong antas.",
+      title: "Anong baitang ka?",
+      subtitle: "Iaakma namin ang aralin sa antas mo.",
       options: {
-        "4": { label: "Baitang 4", description: "Pagbuo ng matibay na pundasyon" },
-        "5": { label: "Baitang 5", description: "Pinapalawak ang iyong kaalaman" },
-        "6": { label: "Baitang 6", description: "Paghahanda sa susunod na antas" },
+        "1": { label: "Baitang 1", description: "Simula ng pag-aaral" },
+        "2": { label: "Baitang 2", description: "Lumalaki araw-araw" },
+        "3": { label: "Baitang 3", description: "Mas may tiwala na" },
+        "4": { label: "Baitang 4", description: "Matibay na pundasyon" },
+        "5": { label: "Baitang 5", description: "Mas maraming alam" },
+        "6": { label: "Baitang 6", description: "Handa sa susunod na antas" },
       },
     },
     subject: {
-      title: "Ano ang gusto mong pag-aralan?",
-      subtitle: "May darating pang ibang asignatura.",
+      title: "Pumili ng asignatura",
+      subtitle: "Ano ang gusto mong aralin ngayon?",
       options: {
-        science: { label: "Agham", description: "Tuklasin kung paano gumagana ang mundo" },
+        science: { label: "Agham", description: "Alamin kung paano gumagana ang mundo" },
       },
     },
     language: {
-      title: "Aling wika ang nakakatulong sa iyong pag-aaral?",
-      subtitle: "Mababago mo ito anumang oras habang nag-aaral.",
+      title: "Anong wika ang gusto mo?",
+      subtitle: "Puwede mong palitan kahit kailan.",
       options: {
-        filipino: { label: "Filipino", description: "Mga aralin sa Filipino" },
+        filipino: { label: "Filipino", description: "Aralin sa Filipino" },
         taglish: { label: "Taglish", description: "Halong English at Filipino" },
-        english: { label: "English", description: "Mga aralin sa English" },
+        english: { label: "English", description: "Aralin sa English" },
+      },
+    },
+    topicDiscovery: {
+      prompt: (subject: string) => {
+        const labels: Record<string, string> = {
+          mathematics: "Matematika",
+          science: "Agham",
+          english: "English",
+          filipino: "Filipino",
+          "araling-panlipunan": "Araling Panlipunan",
+          esp: "ESP",
+          mapeh: "MAPEH",
+          ict: "ICT",
+          "mother-tongue": "Mother Tongue",
+        };
+        return `Ano ang gusto mong matutunan sa ${labels[subject] ?? "asignaturang ito"}?`;
+      },
+      placeholder: "Ano ang gusto mong matutunan?",
+      continue: "Hanapin ang paksa",
+      loading: "Hinahanap ang mga paksa…",
+      examplesBySubject: {
+        mathematics: ["Pagdaragdag", "Fraction", "Mga hugis", "Oras", "Pera"],
+        science: ["Halaman", "Hayop", "Planeta", "Katawan", "Magnet"],
+        english: ["Pagbasa", "Grammar", "Salita", "Pagsulat", "Kuwento"],
+        filipino: ["Pagbasa", "Gramatika", "Salita", "Pagsulat", "Kuwento"],
+        "araling-panlipunan": ["Komunidad", "Kasaysayan", "Lugar", "Mga lider", "Kultura"],
+        esp: ["Mabuting asal", "Respeto", "Kabaitan", "Katapatan", "Pamilya"],
+        mapeh: ["Musika", "Sining", "PE", "Kalusugan", "Sayaw"],
+        ict: ["Computer", "Keyboard", "Internet", "Kaligtasan", "Apps"],
+        "mother-tongue": ["Alpabet", "Tunog", "Salita", "Kuwento", "Pamilya"],
+      },
+    },
+    topicSuggestions: {
+      title: "Pumili ng paksa",
+      subtitle: (category: string) => `Narito ang mga paksang ${category} para sa baitang mo.`,
+      subtitleGeneric: "Piliin ang pinaka-interesante sa iyo.",
+      error: "Hindi namin mahanap ang paksa. Subukan ang ibang salita.",
+      empty: "Walang nahanap na paksa. Subukan ang ibang salita.",
+      retry: "Subukan ulit",
+      badge: (grade: number, subject: string) => {
+        const labels: Record<string, string> = {
+          mathematics: "Matematika",
+          science: "Agham",
+          english: "English",
+          filipino: "Filipino",
+          "araling-panlipunan": "Araling Panlipunan",
+          esp: "ESP",
+          mapeh: "MAPEH",
+          ict: "ICT",
+          "mother-tongue": "Mother Tongue",
+        };
+        return `Baitang ${grade} ${labels[subject] ?? subject}`;
+      },
+      readingTime: (minutes: number) => `${minutes} min basahin`,
+      difficulty: {
+        easy: "Madali",
+        moderate: "Katamtaman",
+        challenging: "Mahirap",
       },
     },
     goal: {
-      title: "Ano ang iyong layunin ngayon?",
-      subtitle: "Makakatulong ito para gabayan ka sa susunod.",
+      title: "Ano ang gusto mong gawin?",
+      subtitle: "Para malaman namin kung paano ka tutulungan.",
       options: {
         "exam-preparation": {
-          label: "Paghahanda sa Pagsusulit",
-          description: "Maghanda para sa quarterly exams",
+          label: "Maghanda sa pagsusulit",
+          description: "Mag-review para sa exam",
         },
         "homework-help": {
-          label: "Tulong sa Takdang-Aralin",
-          description: "Unawain ang takdang-aralin ngayon",
+          label: "Tulong sa takdang-aralin",
+          description: "Unawain ang homework ngayon",
         },
         "understand-concepts": {
-          label: "Unawain ang mga Konsepto",
-          description: "Matutunan nang malalim ang mga paksa",
+          label: "Unawain ang aralin",
+          description: "Matuto nang mabuti sa paksa",
         },
         "resume-lesson": {
-          label: "Ituloy ang Nakaraang Aralin",
+          label: "Ituloy ang dati",
           description: "Magpatuloy kung saan ka tumigil",
         },
       },
@@ -541,179 +676,179 @@ const fil: Dictionary = {
   learn: {
     minRead: (n: number) => `${n} min basahin`,
     offline: {
-      label: "Offline na Aralin",
-      title: "Offline na Pag-aaral",
-      body: "Gumagamit ka ng mga nakahandang aralin para makapag-aral kahit mahina ang koneksyon.",
+      label: "Offline na aralin",
+      title: "Offline mode",
+      body: "Gumagamit ka ng naka-save na aralin. Puwede kang mag-aral kahit mahina ang internet.",
     },
-    teachDifferently: "Ituro sa Ibang Paraan",
+    teachDifferently: "Iba pang paliwanag",
     curriculum: {
-      heading: "Pagkakahanay sa Kurikulum",
-      competency: "Kompetensi",
+      heading: "Ayon sa kurikulum",
+      competency: "Layunin",
     },
     sections: {
-      simple: "Simpleng Paliwanag",
+      simple: "Paliwanag",
       taglish: "Sa Taglish",
-      example: "Halimbawa sa Totoong Buhay",
-      whyItMatters: "Bakit Ito Mahalaga",
+      filipinoSecond: "Isa pang paliwanag",
+      example: "Halimbawa sa buhay",
+      whyItMatters: "Bakit mahalaga",
     },
-    startMiniQuiz: "Simulan ang Mini Quiz",
-    quickCheckButton: "Mabilis na Pagsusuri",
+    startMiniQuiz: "Simulan ang quiz",
+    quickCheckButton: "Mabilis na tanong",
     error: {
-      title: "Hindi ma-load ang iyong aralin",
+      title: "Hindi ma-load ang aralin",
       description:
-        "Tingnan ang iyong koneksyon sa internet at subukang muli. Ligtas ang iyong progreso.",
+        "Tingnan ang internet mo at subukan ulit. Safe ang progress mo.",
     },
     quickCheck: {
-      title: "Mabilis na Pagsusuri ng Pang-unawa",
-      prompt: "Gaano mo na naiintindihan ang araling ito sa ngayon?",
-      groupAria: "Gaano mo naiintindihan ang araling ito?",
+      title: "Naintindihan mo ba?",
+      prompt: "Naintindihan mo ba ang aralin?",
+      groupAria: "Naintindihan mo ba ang aralin?",
       options: {
         "got-it": {
-          label: "Naiintindihan ko!",
+          label: "Oo, gets ko!",
           encouragement:
-            "Ang galing mo! Mukhang handa ka na. Patunayan natin sa isang mabilis na quiz.",
+            "Ang galing! Subukan natin sa quiz para mas sigurado.",
         },
         almost: {
           label: "Halos na",
           encouragement:
-            "Gumagaling ka! Tama lang na mag-practice. Makakatulong ang quiz para tumatak.",
+            "Gumagaling ka! Okay lang mag-practice. Makakatulong ang quiz.",
         },
         confused: {
-          label: "Litó pa",
+          label: "Hindi pa",
           encouragement:
-            "Okay lang yan! Pwede mong basahin ulit ang lesson sa taas. Take your time — kaya mo 'to.",
+            "Okay lang! Basahin mo ulit ang aralin sa taas. Kaya mo yan!",
         },
       },
     },
     adaptive: {
       "another-explanation": {
-        title: "Narito ang ibang paraan ng pagtingin dito",
-        body: "Minsan mas gumagana ang ibang paliwanag. Subukan natin ang panibagong paraan sa paksang ito.",
+        title: "Subukan natin sa ibang paraan",
+        body: "Minsan mas madaling intindihin kapag iba ang paliwanag. Subukan natin ulit.",
       },
       simplified: {
-        title: "Balikan natin ito nang dahan-dahan",
-        body: "Okay lang mahirapan! Hahatiin natin ito sa mas maliliit at mas madaling hakbang. Kaya mo 'to.",
+        title: "Balikan natin nang dahan-dahan",
+        body: "Okay lang kung mahirap! Hatiin natin sa maliliit na hakbang. Kaya mo yan!",
       },
     },
   },
   quiz: {
     thisTopic: "ang paksang ito",
     questionLabel: "Tanong",
-    checkAnswer: "Tingnan ang Sagot",
-    seeResults: "Tingnan ang Resulta",
-    nextQuestion: "Susunod na Tanong",
-    correctFeedback: "Tama! Magaling.",
-    wrongFeedback: "Magaling subukan — pag-aralan natin!",
+    checkAnswer: "Tingnan ang sagot",
+    seeResults: "Tingnan ang resulta",
+    nextQuestion: "Susunod na tanong",
+    correctFeedback: "Tama! Ang galing mo.",
+    wrongFeedback: "Subukan mo ulit — matututo ka!",
     error: {
-      title: "Hindi ma-load ang iyong pagsusulit",
+      title: "Hindi ma-load ang quiz",
       description:
-        "Tingnan ang iyong koneksyon sa internet at subukang muli. Ligtas ang iyong progreso.",
-      backToLesson: "Bumalik sa Aralin",
+        "Tingnan ang internet mo at subukan ulit. Safe ang progress mo.",
+      backToLesson: "Bumalik sa aralin",
     },
-    studyTips: "Mga Tip sa Pag-aaral",
-    viewProgress: "Tingnan ang Aking Progreso",
+    studyTips: "Mga tip sa pag-aaral",
+    viewProgress: "Tingnan ang progress ko",
     nextUp: (topic: string) => `Susunod: ${topic}`,
-    whyNext: "Pinili para sa iyo batay sa resulta ng iyong pagsusulit.",
-    readyToMoveOn: (topic: string) =>
-      `Handa ka nang magpatuloy mula sa ${topic}!`,
+    whyNext: "Pinili ito base sa resulta ng quiz mo.",
+    readyToMoveOn: (topic: string) => `Handa ka na sa susunod pagkatapos ng ${topic}!`,
     morePractice: (topic: string) =>
-      `Konting practice pa sa ${topic} at kaya mo na ito.`,
+      `Kaunting practice pa sa ${topic} at kaya mo na!`,
     recommendation: {
       unlock: {
-        badge: "Tapos na ang Aralin",
-        primaryAction: "Susunod na Aralin",
-        secondaryAction: "Balikan ang Araling Ito",
+        badge: "Tapos na ang aralin",
+        primaryAction: "Susunod na aralin",
+        secondaryAction: "Balikan ang aralin",
       },
       retry: {
         badge: "Halos na",
-        primaryAction: "Subukan Muli ang Pagsusulit",
-        secondaryAction: "Balikan ang Araling Ito",
+        primaryAction: "Subukan ulit ang quiz",
+        secondaryAction: "Balikan ang aralin",
       },
       review: {
-        badge: "Balikan Natin",
-        primaryAction: "Balikan ang Aralin",
-        secondaryAction: "Subukan Muli ang Pagsusulit",
+        badge: "Balikan muna",
+        primaryAction: "Basahin ulit ang aralin",
+        secondaryAction: "Subukan ulit ang quiz",
       },
     },
   },
   progress: {
-    title: "Ang Iyong Progreso",
+    title: "Progress mo",
     subtitle: "Gumagaling ka — ituloy mo lang!",
-    motivation: "Bawat aralin ay nagpapalakas sa iyo. Ituloy mo lang, isang hakbang sa bawat pagkakataon.",
+    motivation: "Bawat aralin ay dagdag na alam. Isang hakbang lang bawat araw.",
     recommendedNext: {
-      label: "Inirerekomendang Susunod",
-      reviewMessage: "Balikan natin ito nang sama-sama para tumatak.",
-      continueMessage: "Magpatuloy dito at panatilihin ang sigla.",
-      reviewButton: "Balikan ang Aralin",
-      continueButton: "Ipagpatuloy ang Pag-aaral",
+      label: "Susunod na inirerekomenda",
+      reviewMessage: "Balikan natin ito para mas tumatak sa isip mo.",
+      continueMessage: "Ituloy dito at huwag putulin ang galing mo.",
+      reviewButton: "Balikan ang aralin",
+      continueButton: "Magpatuloy sa pag-aaral",
     },
     todayGoal: {
-      label: "Layunin Ngayon",
-      done: "Tapos na! Naabot mo ang layunin ngayon. Ang galing mo!",
+      label: "Goal ngayon",
+      done: "Tapos na! Naabot mo ang goal ngayon. Ang galing mo!",
       remaining: (n: number) =>
-        `${n} pa para maabot ang iyong layunin ngayon. Kaya mo 'to!`,
+        `${n} pa para sa goal ngayon. Kaya mo yan!`,
     },
     stats: {
-      lessonsMastered: "Mga Araling Naunawaan",
-      quizAccuracy: "Tama sa Pagsusulit",
-      mostRecent: "Pinakahuling pagsusulit",
-      learningStreak: "Streak ng Pag-aaral",
+      lessonsMastered: "Araling natapos",
+      quizAccuracy: "Tamang sagot sa quiz",
+      mostRecent: "Huling quiz",
+      learningStreak: "Sunod-sunod na araw",
       day: (n: number) => `${n} araw`,
       days: (n: number) => `${n} araw`,
-      studyTime: "Oras ng Pag-aaral",
+      studyTime: "Oras ng pag-aaral",
     },
     understanding: {
-      meter: "Sukatan ng Pang-unawa",
-      great: "Mahusay na Progreso",
-      improving: "Gumagaling Ka",
-      keepGoing: "Ituloy Mo Lang",
-      starting: "Kasisimula Pa Lang",
-      ready: "Handa nang Magsimula",
+      meter: "Gaano mo naiintindihan",
+      great: "Ang galing mo",
+      improving: "Gumagaling ka",
+      keepGoing: "Ituloy mo lang",
+      starting: "Kasisimula pa lang",
+      ready: "Handa nang magsimula",
     },
     weekly: {
-      title: "Oras ng Pag-aaral Ngayong Linggo",
+      title: "Oras ng pag-aaral ngayong linggo",
       empty1: "Wala pang oras ng pag-aaral ngayong linggo",
-      empty2: "Tapusin ang isang pagsusulit at makikita mong lalaki ang mga bar!",
+      empty2: "Tapusin ang quiz at lalaki ang bar dito!",
       weekdays: ["Lin", "Lun", "Mar", "Miy", "Huw", "Biy", "Sab"],
     },
     topics: {
-      heading: "Ang Iyong mga Paksa",
-      mastered: "Naunawaan",
+      heading: "Mga paksa mo",
+      mastered: "Natapos",
       review: "Balikan",
-      ready: "Handa",
+      ready: "Handa na",
       locked: "Naka-lock",
       best: (n: number) => ` · Pinakamataas ${n}%`,
     },
   },
   settings: {
-    title: "Mga Setting",
+    title: "Settings",
     subtitle: "Ayusin kung paano gumagana ang EduBridge para sa iyo.",
     dataPerf: {
-      title: "Data at Performance",
-      description: "Makatipid ng data sa mabagal o limitadong koneksyon.",
+      title: "Data at bilis",
+      description: "Makatipid ng data kapag mabagal ang internet.",
     },
     language: {
       title: "Wika",
-      description: "Piliin ang wikang nakakatulong sa iyong pag-aaral.",
-      current: (lang: string) => `Kasalukuyan: ${lang}`,
-      tapToSwitch: "I-tap para palitan ang wika.",
-      toggleAria: (lang: string) => `Wika: ${lang}. I-tap para palitan.`,
+      description: "Piliin ang wikang gusto mo sa pag-aaral.",
+      current: (lang: string) => `Ngayon: ${lang}`,
+      tapToSwitch: "Pindutin para palitan ang wika.",
+      toggleAria: (lang: string) => `Wika: ${lang}. Pindutin para palitan.`,
     },
     startOver: {
-      title: "Magsimula Muli",
-      description: "I-reset ang iyong mga pinili at i-setup muli ang iyong pag-aaral.",
-      button: "Simulan Muli ang Onboarding",
+      title: "Magsimula ulit",
+      description: "I-reset ang mga pinili mo at mag-setup ulit.",
+      button: "Simulan ulit ang setup",
     },
   },
   offline: {
-    title: "Offline ka ngayon",
+    title: "Offline ka",
     description:
-      "Tingnan ang iyong koneksyon sa internet, tapos bumalik para ipagpatuloy ang aralin. Naghihintay ang iyong progreso.",
+      "Tingnan ang internet mo, tapos bumalik para magpatuloy. Nandito pa ang progress mo.",
   },
   errorBoundary: {
-    title: "May Nangyaring Mali",
+    title: "May nangyaring mali",
     description:
-      "Huwag mag-alala — ligtas ang iyong progreso. Subukan muli at magpatuloy sa pag-aaral.",
+      "Huwag mag-alala — safe ang progress mo. Subukan ulit at magpatuloy sa pag-aaral.",
   },
 };
 

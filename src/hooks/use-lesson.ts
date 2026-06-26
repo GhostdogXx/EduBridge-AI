@@ -11,6 +11,7 @@ type LessonStatus = "idle" | "loading" | "success" | "error";
 interface UseLessonResult {
   data: LessonResponse | null;
   status: LessonStatus;
+  errorMessage: string | null;
   reload: () => void;
 }
 
@@ -21,15 +22,17 @@ export function useLesson(
   const { userProfile, lowDataMode, isHydrated } = useAppContext();
   const [data, setData] = useState<LessonResponse | null>(null);
   const [status, setStatus] = useState<LessonStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   const reload = useCallback(() => setReloadToken((token) => token + 1), []);
 
   useEffect(() => {
-    if (!isHydrated || !userProfile) return;
+    if (!isHydrated || !userProfile || !topicId.trim()) return;
 
     const controller = new AbortController();
     setStatus("loading");
+    setErrorMessage(null);
 
     fetch("/api/lesson", {
       method: "POST",
@@ -43,18 +46,26 @@ export function useLesson(
       signal: controller.signal,
     })
       .then(async (response) => {
-        if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+        if (!response.ok) {
+          const body = (await response.json().catch(() => null)) as {
+            error?: string;
+          } | null;
+          throw new Error(body?.error ?? `Request failed: ${response.status}`);
+        }
         const json = (await response.json()) as LessonResponse;
         setData(json);
         setStatus("success");
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
+        setErrorMessage(
+          error instanceof Error ? error.message : "Lesson request failed.",
+        );
         setStatus("error");
       });
 
     return () => controller.abort();
   }, [isHydrated, userProfile, topicId, lowDataMode, variant, reloadToken]);
 
-  return { data, status, reload };
+  return { data, status, errorMessage, reload };
 }

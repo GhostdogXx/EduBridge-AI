@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 
-import { FeatureCards } from "@/components/landing/feature-cards";
 import { HeroSection } from "@/components/landing/hero-section";
-import { HowItWorks } from "@/components/landing/how-it-works";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { ProblemSection } from "@/components/landing/problem-section";
 
 export const metadata: Metadata = {
   title: "Learn Smarter, One Lesson at a Time",
@@ -19,9 +16,6 @@ export default function HomePage() {
       <LandingHeader />
       <main id="main-content" tabIndex={-1} className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
         <HeroSection />
-        <ProblemSection />
-        <FeatureCards />
-        <HowItWorks />
       </main>
       <LandingFooter />
     </div>

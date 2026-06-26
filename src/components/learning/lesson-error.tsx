@@ -14,9 +14,10 @@ import { useT } from "@/lib/i18n";
 
 interface LessonErrorProps {
   onRetry: () => void;
+  message?: string | null;
 }
 
-export function LessonError({ onRetry }: LessonErrorProps) {
+export function LessonError({ onRetry, message }: LessonErrorProps) {
   const t = useT();
 
   return (
@@ -26,7 +27,9 @@ export function LessonError({ onRetry }: LessonErrorProps) {
           <CloudOff className="size-7 text-muted-foreground" aria-hidden="true" />
         </span>
         <CardTitle className="text-xl">{t.learn.error.title}</CardTitle>
-        <CardDescription>{t.learn.error.description}</CardDescription>
+        <CardDescription>
+          {message ?? t.learn.error.description}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center">
         <Button

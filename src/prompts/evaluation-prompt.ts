@@ -1,10 +1,12 @@
-import type { CurriculumTopic } from "@/lib/curriculum";
+import type { ResolvedLessonTopic } from "@/lib/topic-utils";
 import type {
   AdaptiveRecommendation,
   UserProfile,
 } from "@/lib/types/learning";
 import {
   JSON_ONLY_RULES,
+  filipinoContentBlock,
+  isFilipinoLanguage,
   languageGuidance,
   lowDataNote,
   lowDataEvaluationRules,
@@ -12,7 +14,7 @@ import {
 
 interface BuildEvaluationPromptArgs {
   profile: UserProfile;
-  topic: CurriculumTopic;
+  topic: ResolvedLessonTopic;
   score: number;
   total: number;
   /** Decided deterministically by the app — never by the model. */
@@ -43,19 +45,29 @@ export function buildEvaluationPrompt({
   recommendation,
   lowDataMode = false,
 }: BuildEvaluationPromptArgs): string {
+  const filipinoBlock = filipinoContentBlock(profile.language);
+
   return [
     "You are EduBridge AI, giving warm, positive feedback after a quiz. Never shame the student.",
     "",
-    `TOPIC: ${topic.topic}`,
+    `TOPIC: ${topic.title}`,
     `RESULT: The student scored ${score} out of ${total}.`,
     `SITUATION: ${RECOMMENDATION_CONTEXT[recommendation]}`,
     "",
     "STUDENT:",
     `- ${languageGuidance(profile.language)}`,
+    ...(filipinoBlock ? ["", filipinoBlock] : []),
     "",
     "FEEDBACK RULES:",
     "- Always be encouraging and kind, whatever the score.",
-    "- Use a warm Taglish-friendly tone that a Filipino student would enjoy.",
+    ...(isFilipinoLanguage(profile.language)
+      ? [
+          "- Isulat ang headline, feedback, at tips sa simpleng Filipino.",
+          "- Maikli at malinaw ang bawat pangungusap. Parang guro na nagpapalakas ng loob.",
+        ]
+      : [
+          "- Use a warm Taglish-friendly tone that a Filipino student would enjoy.",
+        ]),
     "- Do NOT decide the next lesson — only give feedback and tips.",
     `- ${lowDataNote(lowDataMode)}`,
     ...(lowDataEvaluationRules(lowDataMode)

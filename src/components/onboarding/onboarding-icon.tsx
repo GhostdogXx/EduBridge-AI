@@ -1,13 +1,8 @@
 import {
-  Atom,
   BookOpenCheck,
-  ClipboardList,
   GraduationCap,
   Languages,
-  Lightbulb,
   MessageSquareText,
-  PencilRuler,
-  PlayCircle,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -15,17 +10,16 @@ import {
 import type { OnboardingIcon as OnboardingIconName } from "@/lib/onboarding-content";
 
 const ICON_MAP: Record<OnboardingIconName, LucideIcon> = {
+  "grade-1": GraduationCap,
+  "grade-2": GraduationCap,
+  "grade-3": GraduationCap,
   "grade-4": GraduationCap,
   "grade-5": GraduationCap,
   "grade-6": GraduationCap,
-  science: Atom,
+  science: Sparkles,
   english: BookOpenCheck,
   filipino: Languages,
   taglish: MessageSquareText,
-  exam: ClipboardList,
-  homework: PencilRuler,
-  concepts: Lightbulb,
-  resume: PlayCircle,
 };
 
 interface OnboardingIconProps {

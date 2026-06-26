@@ -31,6 +31,16 @@ export function createInitialPath(
   }, {});
 }
 
+/** Single-topic path for AI-discovered lessons from onboarding. */
+export function createPathForTopic(topicId: string): LearningPathState {
+  return {
+    [topicId]: {
+      ...DEFAULT_TOPIC_STATE,
+      status: "available",
+    },
+  };
+}
+
 /** Ensures every curriculum topic has an entry, preserving stored progress. */
 export function normalizePath(
   stored: Partial<LearningPathState> | null,
@@ -91,6 +101,12 @@ export function getRecommendedTopicId(
   path: LearningPathState,
   topics: CurriculumTopic[] = SCIENCE_TOPICS,
 ): string {
+  const dynamicTopic = Object.keys(path).find((topicId) => {
+    const state = getTopicState(path, topicId);
+    return state.status === "available" || state.status === "needs-review";
+  });
+  if (dynamicTopic) return dynamicTopic;
+
   const actionable = topics.find((topic) => {
     const state = getTopicState(path, topic.id);
     return state.status === "available" || state.status === "needs-review";

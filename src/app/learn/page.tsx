@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { LessonView } from "@/components/learning/lesson-view";
-import { getTopic, resolveTopicId } from "@/lib/curriculum";
 import { variantFromMode } from "@/lib/learning-path";
 
 export const metadata: Metadata = {
@@ -16,19 +15,17 @@ interface LearnPageProps {
 
 export default async function LearnPage({ searchParams }: LearnPageProps) {
   const { lesson, mode } = await searchParams;
-  const topicId = resolveTopicId(lesson);
-  const topic = getTopic(topicId);
   const variant = variantFromMode(mode);
 
   return (
     <AppShell
-      title={topic?.topic}
+      topicId={lesson}
       showLessonControls
       showBack
       backHref="/"
     >
       <LessonView
-        topicId={topicId}
+        topicId={lesson ?? ""}
         variant={variant}
         explicit={lesson !== undefined}
       />

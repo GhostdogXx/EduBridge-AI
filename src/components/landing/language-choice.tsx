@@ -7,15 +7,7 @@ import { useT } from "@/lib/i18n";
 import type { LanguagePreference } from "@/lib/types/learning";
 import { cn } from "@/lib/utils";
 
-const LANGUAGE_OPTIONS: {
-  value: LanguagePreference;
-  label: string;
-  description: string;
-}[] = [
-  { value: "filipino", label: "Filipino", description: "Mga aralin sa Filipino" },
-  { value: "taglish", label: "Taglish", description: "Halong English at Filipino" },
-  { value: "english", label: "English", description: "Lessons in English" },
-];
+const LANGUAGE_VALUES: LanguagePreference[] = ["filipino", "taglish", "english"];
 
 export function LanguageChoice() {
   const { preferredLanguage, setPreferredLanguage } = useAppContext();
@@ -33,16 +25,17 @@ export function LanguageChoice() {
         aria-label={t.a11y.preferredLanguage}
         className="grid grid-cols-1 gap-2.5 sm:grid-cols-3"
       >
-        {LANGUAGE_OPTIONS.map((option) => {
-          const isSelected = preferredLanguage === option.value;
+        {LANGUAGE_VALUES.map((value) => {
+          const option = t.landing.languageChoice.options[value];
+          const isSelected = preferredLanguage === value;
 
           return (
             <button
-              key={option.value}
+              key={value}
               type="button"
               role="radio"
               aria-checked={isSelected}
-              onClick={() => setPreferredLanguage(option.value)}
+              onClick={() => setPreferredLanguage(value)}
               className={cn(
                 "flex min-h-16 flex-col items-center justify-center gap-0.5 rounded-2xl border-2 px-4 py-3 text-center transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                 isSelected
